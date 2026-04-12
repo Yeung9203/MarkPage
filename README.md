@@ -2,6 +2,12 @@
 
 智能书签管理 Chrome 扩展 —— AI 自动分类、标签整理、美观新标签页。
 
+## 界面预览
+
+| 深色模式 | 浅色模式 |
+| :---: | :---: |
+| ![深色模式](docs/screenshots/newtab-dark.png) | ![浅色模式](docs/screenshots/newtab-light.png) |
+
 ## 功能亮点
 
 - **AI 自动打标 / 分类**：新增书签时，后台自动调用 AI 推荐标签与归类
