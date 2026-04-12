@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新标签页 — MarkPage</title>
+
+  <!-- 早期主题注入（同步、CSP 合规）：在 CSS 加载前设置 data-theme，避免 FOUC -->
+  <script src="/theme-init.js"></script>
+
+  <!-- 设计令牌 -->
+  <link rel="stylesheet" href="./styles/tokens.css" />
+  <!-- 基础重置 -->
+  <link rel="stylesheet" href="./styles/base.css" />
+  <!-- 模块样式 -->
+  <link rel="stylesheet" href="./styles/sidebar.css" />
+  <link rel="stylesheet" href="./styles/header.css" />
+  <link rel="stylesheet" href="./styles/bookmarks.css" />
+  <link rel="stylesheet" href="./styles/drawer.css" />
+  <link rel="stylesheet" href="./styles/search.css" />
+</head>
+<body>
+  <!-- 应用根容器，由 main.ts 渲染 -->
+  <div id="app"></div>
+
+  <!-- 入口脚本 -->
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

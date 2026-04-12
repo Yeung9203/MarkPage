@@ -1,0 +1,117 @@
+/**
+ * 设计令牌（Design Tokens）
+ *
+ * 从 design-v2-linear.html 原型提取的所有设计变量
+ * 包含暗色/亮色主题、间距、字体、圆角、过渡等
+ *
+ * --accent 的派生色使用 color-mix() 从 --accent 动态计算
+ */
+
+/* ============================================================
+   暗色主题（默认）
+   ============================================================ */
+:root {
+  /* —— 字体 —— */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* —— 过渡 —— */
+  --ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --fast: 120ms;
+  --normal: 200ms;
+
+  /* —— 背景色（Linear 风格，层级更柔和） —— */
+  --bg-0: #17171a;     /* 主背景 — 深但不死黑 */
+  --bg-1: #1c1c1f;     /* 侧边栏、头部 */
+  --bg-2: #222226;     /* 卡片、次级容器 */
+  --bg-3: #2a2a2f;     /* 输入框、徽章背景 */
+  --bg-hover: #2f2f35;
+  --bg-active: #36363c;
+
+  /* —— 边框 —— */
+  --border: #2e2e34;
+  --border-strong: #454550;
+
+  /* —— 文字 —— */
+  --text-1: #f4f4f6;
+  --text-2: #a8a8b3;
+  --text-3: #77777f;
+  --text-4: #55555d;
+
+  /* —— 强调色（可被用户自定义覆盖） —— */
+  --accent: #8b5cf6;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-muted: color-mix(in srgb, var(--accent) 85%, black);
+
+  /* —— 功能色 —— */
+  --red: #ef4444;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --blue: #3b82f6;
+
+  /* —— 阴影 —— */
+  --shadow: 0 0 0 1px var(--border);
+
+  /* —— 间距体系（4pt 基准） —— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* —— 圆角 —— */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* —— 字号 —— */
+  --text-xs: 10px;
+  --text-sm: 11px;
+  --text-base: 12px;
+  --text-md: 13px;
+  --text-lg: 14px;
+  --text-xl: 16px;
+  --text-2xl: 18px;
+
+  /* —— 字重 —— */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+}
+
+/* ============================================================
+   亮色主题
+   ============================================================ */
+:root[data-theme='light'] {
+  --bg-0: #ffffff;
+  --bg-1: #fafafa;
+  --bg-2: #f4f4f5;
+  --bg-3: #e4e4e7;
+  --bg-hover: #f0f0f3;
+  --bg-active: #e8e8ec;
+
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+
+  --text-1: #09090b;
+  --text-2: #52525b;
+  --text-3: #71717a;
+  --text-4: #a1a1aa;
+
+  --accent: #7c3aed;
+  --accent-soft: color-mix(in srgb, var(--accent) 8%, transparent);
+  --accent-muted: color-mix(in srgb, var(--accent) 80%, black);
+
+  --red: #dc2626;
+  --green: #16a34a;
+  --amber: #d97706;
+  --blue: #2563eb;
+
+  --shadow: 0 0 0 1px var(--border);
+}

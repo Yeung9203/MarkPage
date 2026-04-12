@@ -1,0 +1,550 @@
+/**
+ * 弹窗样式
+ *
+ * 插件点击弹窗，宽度 340px，紧凑的 Linear 风格
+ */
+
+@import '../newtab/styles/tokens.css';
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  min-height: 80px;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text-1);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* —— 容器 —— */
+.popup-container {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* —— 加载 & 错误 —— */
+.popup-loading,
+.popup-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.popup-error { color: var(--red); }
+
+/* —— 页面信息头 —— */
+.popup-header {
+  padding: 0 2px;
+}
+
+.popup-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+.popup-url {
+  font-size: 11.5px;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* —— 已收藏状态 —— */
+.popup-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  background: var(--bg-2);
+  border-radius: 6px;
+  color: var(--text-3);
+}
+
+.popup-status--saved {
+  color: var(--green);
+}
+
+.popup-status-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* —— AI 分类结果卡片（扁平，无嵌套容器） —— */
+.popup-classify-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-classify-header {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-4);
+}
+
+.popup-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+/* —— 主推荐分类行 —— */
+.popup-classify-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 7px;
+}
+
+.popup-classify-category {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.popup-classify-confidence {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— 备选分类 —— */
+.popup-classify-alts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.popup-classify-alts > span:first-child {
+  font-size: 11px;
+  color: var(--text-4);
+}
+
+.popup-alt-btn {
+  font-family: var(--font);
+  font-size: 11.5px;
+  color: var(--text-2);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--fast);
+}
+
+.popup-alt-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* —— 新分类提示 —— */
+.popup-classify-new {
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 6px 8px;
+  background: var(--bg-2);
+  border-radius: 5px;
+}
+
+/* —— 操作按钮区域 —— */
+.popup-classify-actions,
+.popup-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.popup-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--fast);
+}
+
+.popup-btn--primary {
+  color: white;
+  background: var(--accent);
+}
+
+.popup-btn--primary:hover {
+  background: var(--accent-muted);
+}
+
+.popup-btn--primary:disabled {
+  background: var(--bg-3);
+  color: var(--text-4);
+  cursor: not-allowed;
+}
+
+.popup-btn--secondary {
+  color: var(--text-2);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+
+.popup-btn--secondary:hover {
+  color: var(--text-1);
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.popup-btn--small {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 11.5px;
+}
+
+/* —— 分类列表（替代原生 select） —— */
+.popup-folder-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-1);
+  padding: 4px;
+}
+
+.popup-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all var(--fast);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+
+.popup-folder-item:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.popup-folder-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.popup-folder-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--text-4);
+}
+
+.popup-folder-item.active svg,
+.popup-folder-item:hover svg {
+  color: var(--accent);
+}
+
+.popup-folder-indent {
+  padding-left: 18px;
+}
+
+.popup-folder-indent-2 {
+  padding-left: 32px;
+}
+
+/* —— 新分类创建（合并输入框和按钮） —— */
+.popup-new-folder {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.popup-new-folder input {
+  flex: 1;
+  padding: 7px 10px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text-1);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color var(--fast);
+}
+
+.popup-new-folder input:focus {
+  border-color: var(--accent);
+}
+
+.popup-new-folder input::placeholder {
+  color: var(--text-4);
+}
+
+/* —— 选择分类视图的头部 —— */
+.popup-section-title {
+  font-size: 11px;
+  color: var(--text-4);
+  font-weight: 500;
+  margin-bottom: -2px;
+}
+
+/* —— AI 分析中骨架屏 —— */
+.popup-analyzing {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border-radius: 7px;
+}
+
+.popup-skeleton {
+  height: 13px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg-3) 0%, var(--bg-hover) 50%, var(--bg-3) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.popup-skeleton--main {
+  width: 60%;
+  height: 16px;
+}
+
+.popup-skeleton--small {
+  width: 40%;
+}
+
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* —— 滚动条 —— */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-3);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* —— 文件夹选择（手动模式，保留原生 select 作为兜底） —— */
+.popup-folder-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.popup-folder-select label {
+  font-size: 11.5px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.popup-folder-select select {
+  flex: 1;
+  padding: 6px 10px;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text-1);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2371717a%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+/* ============================================================
+   新版分类布局（参考设计稿）
+   ============================================================ */
+.popup-classify-layout {
+  gap: 12px;
+}
+
+/* 顶部 AI 徽章 + 副标题 */
+.popup-classify-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -2px;
+}
+
+.popup-classify-subtitle {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* 页面信息卡 */
+.popup-page-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border-radius: 8px;
+}
+
+.popup-page-fav {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.popup-page-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.popup-page-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 1px;
+}
+
+.popup-page-url {
+  font-size: 11px;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 分类卡片列表 */
+.popup-folder-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.popup-folder-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all var(--fast);
+  text-align: left;
+  color: var(--text-1);
+}
+
+.popup-folder-card svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.popup-folder-card-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popup-folder-card-pct {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.popup-folder-card:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.popup-folder-card.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.popup-folder-card.active svg,
+.popup-folder-card.active .popup-folder-card-pct {
+  color: var(--accent);
+}
+
+/* 新建分类卡片特殊样式 */
+.popup-folder-card--new {
+  border-style: dashed;
+  border-color: var(--border);
+  color: var(--text-3);
+}
+
+.popup-folder-card--new:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

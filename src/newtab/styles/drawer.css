@@ -1,0 +1,284 @@
+/**
+ * 抽屉面板通用样式
+ *
+ * 设置面板和 AI 整理面板共用的右侧抽屉组件
+ */
+
+/* —— 抽屉容器 — 内嵌式，挤压主内容 —— */
+.drawer {
+  width: 0;
+  min-width: 0;
+  height: 100vh;
+  background: var(--bg-1);
+  border-left: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.25s var(--ease), min-width 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.drawer.open {
+  width: 380px;
+  min-width: 380px;
+  border-left-color: var(--border);
+}
+
+/* —— 抽屉头部 —— */
+.drawer-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.drawer-header-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.drawer-title {
+  flex: 1;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-1);
+}
+
+.drawer-close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all var(--fast);
+}
+
+.drawer-close:hover {
+  color: var(--text-1);
+  background: var(--bg-hover);
+}
+
+/* —— 抽屉内容 —— */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+/* —— 抽屉底部 —— */
+.drawer-footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.drawer-footer-info {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-3);
+}
+
+/* —— 设置项行 —— */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--border);
+}
+
+.setting-label {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-1);
+}
+
+.setting-desc {
+  font-size: var(--text-sm);
+  color: var(--text-4);
+  margin-top: 2px;
+}
+
+/* —— 分组标题 —— */
+.setting-section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+/* —— Toggle 开关 —— */
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--bg-3);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--fast);
+  flex-shrink: 0;
+}
+
+.toggle-knob {
+  width: 14px;
+  height: 14px;
+  background: var(--bg-0);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--fast) var(--ease);
+}
+
+.toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle.on .toggle-knob {
+  transform: translateX(16px);
+}
+
+/* —— 下拉选择 —— */
+.setting-select {
+  padding: 5px 10px;
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--text-1);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.setting-select:focus {
+  border-color: var(--accent);
+}
+
+/* —— 文本输入 —— */
+.setting-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--text-1);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+
+.setting-input::placeholder {
+  color: var(--text-4);
+}
+
+.setting-input:focus {
+  border-color: var(--accent);
+}
+
+/* —— 主题色选择器 —— */
+.color-swatches {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform var(--fast) var(--ease), border-color var(--fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.active {
+  border-color: var(--text-1);
+}
+
+/* —— 自定义颜色输入 —— */
+.color-custom {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-4);
+  font-size: var(--text-lg);
+  font-weight: 300;
+  transition: all var(--fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.color-custom:hover {
+  border-color: var(--text-3);
+  color: var(--text-2);
+}
+
+/* —— 通用按钮 —— */
+.btn {
+  padding: 6px 14px;
+  font-family: var(--font);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--fast);
+}
+
+.btn-primary {
+  color: white;
+  background: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-muted);
+}
+
+.btn-ghost {
+  color: var(--text-2);
+  background: var(--bg-3);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-active);
+}
+
+.btn-text {
+  color: var(--text-3);
+  background: none;
+  padding: 6px 8px;
+}
+
+.btn-text:hover {
+  color: var(--text-1);
+}

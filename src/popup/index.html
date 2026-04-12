@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarkPage</title>
+  <!-- 首屏无闪烁主题 — 绘制前立即根据系统偏好设置主题 -->
+  <script>
+    (function() {
+      var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
+  <!-- 设计令牌 -->
+  <link rel="stylesheet" href="../newtab/styles/tokens.css" />
+  <!-- 弹窗样式 -->
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+<body>
+  <!-- 弹窗根容器 -->
+  <div id="popup-root"></div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

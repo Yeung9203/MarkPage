@@ -1,0 +1,308 @@
+/**
+ * 书签列表样式
+ *
+ * 按分类分组展示书签，包含分组头、书签卡片、favicon 等
+ */
+
+.bookmarks {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-6);
+}
+
+/* —— 分组 —— */
+.bookmark-group,
+.group {
+  margin-bottom: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.bookmark-group:last-child,
+.group:last-child {
+  border-bottom: none;
+}
+
+/* —— 分组头 —— */
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px 10px 21px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background var(--fast);
+  position: sticky;
+  top: 0;
+  background: var(--bg-0);
+  z-index: 10;
+  border-left: 3px solid transparent;
+}
+
+/* 左侧彩色竖条 — 颜色调淡，不抢视觉 */
+.group-header[data-cat="开发工具"] { border-left-color: color-mix(in srgb, var(--blue) 50%, transparent); }
+.group-header[data-cat="技术文档"] { border-left-color: color-mix(in srgb, var(--green) 50%, transparent); }
+.group-header[data-cat="设计"] { border-left-color: color-mix(in srgb, var(--amber) 50%, transparent); }
+.group-header[data-cat="AI 工具"] { border-left-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.group-header[data-cat="社交媒体"] { border-left-color: color-mix(in srgb, var(--red) 50%, transparent); }
+.group-header[data-cat="影音娱乐"] { border-left-color: color-mix(in srgb, #ec4899 50%, transparent); }
+.group-header[data-cat="未分类"] { border-left-color: color-mix(in srgb, var(--text-4) 40%, transparent); }
+
+.group-header:hover {
+  background: var(--bg-hover);
+}
+
+.group-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+.group-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* —— 分组图标颜色变体 —— */
+.gi-dev { background: #3b82f620; color: var(--blue); }
+.gi-doc { background: #22c55e20; color: var(--green); }
+.gi-design { background: #f59e0b20; color: var(--amber); }
+.gi-ai { background: #8b5cf620; color: var(--accent); }
+.gi-social { background: #ef444420; color: var(--red); }
+.gi-uncategorized { background: var(--bg-3); color: var(--text-3); }
+
+.group-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.group-count {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.group-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-4);
+  flex-shrink: 0;
+  transition: transform var(--fast) var(--ease);
+}
+
+.group-chevron svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* —— 书签列表 —— */
+.bookmark-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* —— 书签项 —— */
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--fast);
+}
+
+.bookmark-item:hover {
+  background: var(--bg-hover);
+}
+
+/* —— Favicon —— */
+.bookmark-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+/* —— Favicon 颜色标签 —— */
+.f-gray { background: var(--bg-3); color: var(--text-3); }
+.f-blue { background: #3b82f618; color: var(--blue); }
+.f-green { background: #22c55e18; color: var(--green); }
+.f-amber { background: #f59e0b18; color: var(--amber); }
+.f-red { background: #ef444418; color: var(--red); }
+.f-purple { background: #8b5cf618; color: var(--accent); }
+
+/* —— 书签信息 —— */
+.bookmark-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookmark-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bookmark-url {
+  font-size: var(--text-sm);
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* —— 书签操作按钮（悬停显示） —— */
+.bookmark-actions {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+
+.bookmark-item:hover .bookmark-actions {
+  opacity: 1;
+}
+
+.bookmark-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  transition: all var(--fast);
+}
+
+.bookmark-action-btn:hover {
+  color: var(--text-1);
+  background: var(--bg-active);
+}
+
+/* —— 高亮行（AI 刚分类的书签） —— */
+.bookmark-item.highlight {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* —— Grid 行布局（组件使用 bk-row class） —— */
+.bk-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 180px 100px 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 24px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background var(--fast);
+}
+
+.bk-row:hover {
+  background: var(--bg-hover);
+}
+
+.bk-fav {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.bk-title {
+  font-weight: 450;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-1);
+}
+
+.bk-url {
+  font-size: 12px;
+  color: var(--text-4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bk-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.bk-actions {
+  opacity: 0;
+  transition: opacity var(--fast);
+  display: flex;
+  gap: 2px;
+}
+
+.bk-row:hover .bk-actions {
+  opacity: 1;
+}
+
+.bk-act {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-3);
+  transition: all var(--fast);
+}
+
+.bk-act:hover {
+  color: var(--text-1);
+  background: var(--bg-active);
+}
+
+/* 额外颜色标签 */
+.f-teal { background: #14b8a618; color: #14b8a6; }
+.f-pink { background: #ec489918; color: #ec4899; }
+
+/* —— 分组拖拽排序 —— */
+.group[draggable="true"] > .group-header {
+  cursor: grab;
+}
+
+.group.group-dragging {
+  opacity: 0.4;
+}
+
+.group.group-dragging > .group-header {
+  cursor: grabbing;
+}
+
+.group.group-drag-over-top {
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.group.group-drag-over-bottom {
+  box-shadow: 0 2px 0 0 var(--accent);
+}
+
+/* AI 联动高亮 */
+.bk-row.ai-highlight {
+  background: var(--accent-soft) !important;
+  box-shadow: inset 2px 0 0 var(--accent);
+}

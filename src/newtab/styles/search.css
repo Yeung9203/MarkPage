@@ -1,0 +1,358 @@
+/**
+ * 搜索结果样式
+ *
+ * 包含命令面板（Cmd+K）和行内搜索结果
+ */
+
+/* ============================================================
+   命令面板（Cmd+K 快速搜索）
+   ============================================================ */
+
+/* —— 遮罩层 —— */
+.cmd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20vh;
+}
+
+.cmd-overlay.visible {
+  display: flex;
+}
+
+/* —— 面板容器 —— */
+.cmd-panel {
+  width: 520px;
+  max-height: 420px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: cmdIn 0.15s var(--ease) forwards;
+}
+
+@keyframes cmdIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* —— 搜索输入 —— */
+.cmd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.cmd-input-wrap svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+.cmd-input {
+  flex: 1;
+  font-family: var(--font);
+  font-size: var(--text-xl);
+  color: var(--text-1);
+}
+
+.cmd-input::placeholder {
+  color: var(--text-4);
+}
+
+/* —— 搜索结果列表 —— */
+.cmd-results {
+  overflow-y: auto;
+  max-height: 320px;
+  padding: var(--space-2);
+}
+
+/* —— 结果项 —— */
+.cmd-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--text-2);
+  transition: background var(--fast);
+}
+
+.cmd-result-item:hover,
+.cmd-result-item.active {
+  background: var(--accent-soft);
+}
+
+.cmd-result-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.cmd-result-title {
+  flex: 1;
+  font-size: var(--text-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmd-result-tag {
+  font-size: var(--text-xs);
+  color: var(--text-4);
+}
+
+.cmd-result-badge {
+  font-size: var(--text-xs);
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* —— Google 搜索入口 —— */
+.cmd-google {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: var(--text-base);
+  transition: background var(--fast);
+}
+
+.cmd-google:hover {
+  background: var(--bg-hover);
+}
+
+/* —— 底部快捷键提示 —— */
+.cmd-footer {
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-4);
+  font-size: var(--text-sm);
+}
+
+.cmd-footer kbd {
+  font-family: var(--font);
+  font-size: 9px;
+  background: var(--bg-3);
+  padding: 0 4px;
+  border-radius: 2px;
+  font-weight: var(--weight-medium);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   行内搜索结果（搜索框下拉）
+   ============================================================ */
+
+.inline-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-1);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  display: none;
+}
+
+.inline-results.visible {
+  display: block;
+}
+
+.ir-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background var(--fast);
+}
+
+.ir-item:hover {
+  background: var(--accent-soft);
+}
+
+.ir-item-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+.ir-item-title {
+  flex: 1;
+  font-size: var(--text-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ir-item-tag {
+  font-size: var(--text-xs);
+  color: var(--text-4);
+}
+
+.ir-item-match {
+  font-family: var(--font);
+  font-size: 9px;
+  background: var(--bg-3);
+  padding: 0 4px;
+  border-radius: 2px;
+  font-weight: var(--weight-medium);
+  color: var(--text-3);
+}
+
+/* —— Google 搜索入口 —— */
+.ir-google {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: var(--text-base);
+  transition: background var(--fast);
+}
+
+.ir-google:hover {
+  background: var(--bg-hover);
+}
+
+/* —— 空状态 —— */
+.search-empty {
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.search-empty-title {
+  font-size: var(--text-base);
+  color: var(--text-3);
+}
+
+.search-empty-hint {
+  font-size: var(--text-sm);
+  color: var(--text-4);
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   右键菜单
+   ============================================================ */
+
+.ctx-menu {
+  position: fixed;
+  min-width: 160px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+  z-index: 300;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.ctx-menu.visible {
+  display: block;
+  animation: cmdIn 0.12s var(--ease);
+}
+
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  color: var(--text-2);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font);
+  transition: all var(--fast);
+}
+
+.ctx-item.starred svg {
+  color: #f5a524;
+  fill: #f5a524;
+}
+
+.ctx-item:hover {
+  color: var(--text-1);
+  background: var(--bg-hover);
+}
+
+.ctx-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+
+.ctx-item.danger {
+  color: var(--red);
+}
+
+.ctx-item.danger svg {
+  color: var(--red);
+}
+
+.ctx-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--space-1) 0;
+}
+
+/* ============================================================
+   Toast 通知（AI 分类提示）
+   ============================================================ */
+
+.ai-toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  z-index: 150;
+  min-width: 300px;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.ai-toast.visible {
+  display: block;
+  animation: toastIn 0.25s var(--ease) forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "markpage",
+  "version": "0.1.0",
+  "description": "智能书签管理 — AI 自动分类，高效搜索，美观新标签页",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.4.5",
+    "vite": "^5.4.0"
+  }
+}

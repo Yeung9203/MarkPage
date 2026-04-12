@@ -1,0 +1,175 @@
+/**
+ * 头部模块样式
+ *
+ * 包含搜索框和常用站点快捷访问
+ */
+
+.header {
+  flex-shrink: 0;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 20;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.header-pins {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.header-pins::-webkit-scrollbar { display: none; }
+
+/* —— 搜索框 —— */
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: all var(--fast);
+  flex: 1;
+  cursor: text;
+  position: relative;
+}
+
+.header-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.header-search svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-4);
+  flex-shrink: 0;
+  transition: color var(--fast);
+}
+
+.header-search:focus-within svg {
+  color: var(--accent);
+}
+
+.header-search-input {
+  flex: 1;
+  font-family: var(--font);
+  font-size: var(--text-md);
+  color: var(--text-1);
+}
+
+.header-search-input::placeholder {
+  color: var(--text-4);
+}
+
+/* —— 搜索快捷键提示 —— */
+.header-search-shortcut {
+  font-size: var(--text-sm);
+  color: var(--text-4);
+  background: var(--bg-3);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* —— 常用站点（横向紧凑条） —— */
+.pin-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 450;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--fast);
+  font-family: var(--font);
+  text-decoration: none;
+}
+
+.pin-item:hover {
+  color: var(--text-1);
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.pin-fav {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* —— 搜索下拉浮层 —— */
+.search-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  right: -1px;
+  margin-top: 4px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 6px;
+  z-index: 100;
+  animation: dropdownIn 0.15s var(--ease);
+}
+
+.search-dropdown.visible {
+  display: block;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* —— 内联搜索结果高亮 —— */
+.ir-item {
+  transition: background var(--fast);
+  border-radius: 6px;
+}
+.ir-item:hover,
+.ir-item.active {
+  background: var(--accent-soft);
+}
+
+mark {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}

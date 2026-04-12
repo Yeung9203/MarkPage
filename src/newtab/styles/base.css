@@ -1,0 +1,123 @@
+/**
+ * 基础重置 + 全局样式
+ *
+ * 包含浏览器样式重置和全局通用样式
+ */
+
+/* —— 盒模型重置 —— */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* —— 全局样式 —— */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text-1);
+  background: var(--bg-0);
+  overflow: hidden;
+}
+
+/* —— 链接重置 —— */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* —— 列表重置 —— */
+ul,
+ol {
+  list-style: none;
+}
+
+/* —— 按钮重置 —— */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* —— 输入框重置 —— */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+/* —— 图片重置 —— */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* —— 滚动条样式：默认隐藏，滚动/悬停时显示 —— */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: var(--radius-full);
+  transition: background-color 0.3s ease;
+}
+
+/* 滚动中（由 JS 添加 is-scrolling 类）或鼠标悬停容器时显示 */
+:hover::-webkit-scrollbar-thumb,
+.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-4);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* —— 主布局容器 —— */
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* —— 主内容区域 —— */
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "MarkPage",
+  "version": "0.1.0",
+  "description": "智能书签管理 — AI 自动分类，高效搜索，美观新标签页",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "tabs"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "src/newtab/index.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarkPage — Design Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brand-hue: 65;
+  --brand: oklch(0.72 0.14 var(--brand-hue));
+  --brand-soft: oklch(0.88 0.06 var(--brand-hue));
+  --brand-muted: oklch(0.65 0.10 var(--brand-hue));
+  --brand-deep: oklch(0.55 0.12 var(--brand-hue));
+  --accent-blue: oklch(0.65 0.12 240);
+  --accent-green: oklch(0.68 0.14 155);
+  --accent-rose: oklch(0.68 0.14 15);
+  --accent-violet: oklch(0.65 0.12 300);
+  --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px;
+  --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 64px;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+  --text-xs: 0.694rem; --text-sm: 0.833rem; --text-base: 1rem;
+  --text-md: 1.125rem; --text-lg: 1.25rem; --text-xl: 1.563rem;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  --radius-xl: 24px; --radius-full: 9999px;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
+}
+:root, [data-theme="light"] {
+  --bg-primary: oklch(0.985 0.005 var(--brand-hue));
+  --bg-secondary: oklch(0.965 0.008 var(--brand-hue));
+  --bg-tertiary: oklch(0.945 0.010 var(--brand-hue));
+  --bg-elevated: oklch(0.995 0.003 var(--brand-hue));
+  --bg-hover: oklch(0.935 0.012 var(--brand-hue));
+  --bg-active: oklch(0.91 0.015 var(--brand-hue));
+  --text-primary: oklch(0.22 0.015 var(--brand-hue));
+  --text-secondary: oklch(0.42 0.012 var(--brand-hue));
+  --text-tertiary: oklch(0.58 0.010 var(--brand-hue));
+  --text-on-brand: oklch(0.18 0.02 var(--brand-hue));
+  --border-subtle: oklch(0.90 0.010 var(--brand-hue));
+  --border-default: oklch(0.85 0.012 var(--brand-hue));
+  --shadow-sm: 0 1px 2px oklch(0.20 0.01 var(--brand-hue) / 0.04);
+  --shadow-md: 0 4px 12px oklch(0.20 0.01 var(--brand-hue) / 0.06), 0 1px 3px oklch(0.20 0.01 var(--brand-hue) / 0.04);
+  --shadow-lg: 0 8px 32px oklch(0.20 0.01 var(--brand-hue) / 0.08), 0 2px 8px oklch(0.20 0.01 var(--brand-hue) / 0.04);
+  --shadow-search: 0 12px 48px oklch(0.20 0.01 var(--brand-hue) / 0.10), 0 2px 8px oklch(0.20 0.01 var(--brand-hue) / 0.05);
+  --search-bg: oklch(0.995 0.003 var(--brand-hue));
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg-primary: oklch(0.16 0.010 var(--brand-hue));
+  --bg-secondary: oklch(0.19 0.012 var(--brand-hue));
+  --bg-tertiary: oklch(0.22 0.014 var(--brand-hue));
+  --bg-elevated: oklch(0.21 0.012 var(--brand-hue));
+  --bg-hover: oklch(0.25 0.015 var(--brand-hue));
+  --bg-active: oklch(0.28 0.018 var(--brand-hue));
+  --text-primary: oklch(0.92 0.008 var(--brand-hue));
+  --text-secondary: oklch(0.68 0.010 var(--brand-hue));
+  --text-tertiary: oklch(0.52 0.008 var(--brand-hue));
+  --text-on-brand: oklch(0.15 0.02 var(--brand-hue));
+  --border-subtle: oklch(0.26 0.012 var(--brand-hue));
+  --border-default: oklch(0.30 0.015 var(--brand-hue));
+  --shadow-sm: 0 1px 2px oklch(0.0 0 0 / 0.15);
+  --shadow-md: 0 4px 12px oklch(0.0 0 0 / 0.2), 0 1px 3px oklch(0.0 0 0 / 0.1);
+  --shadow-lg: 0 8px 32px oklch(0.0 0 0 / 0.3), 0 2px 8px oklch(0.0 0 0 / 0.15);
+  --shadow-search: 0 12px 48px oklch(0.0 0 0 / 0.35), 0 2px 8px oklch(0.0 0 0 / 0.2);
+  --search-bg: oklch(0.22 0.012 var(--brand-hue));
+  --brand: oklch(0.78 0.12 var(--brand-hue));
+  --brand-soft: oklch(0.30 0.04 var(--brand-hue));
+  --brand-muted: oklch(0.60 0.08 var(--brand-hue));
+  color-scheme: dark;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font-body); font-size:var(--text-base); line-height:1.55; color:var(--text-primary); background:var(--bg-primary); -webkit-font-smoothing:antialiased; overflow:hidden; height:100vh; }
+.app { height:100vh; display:grid; grid-template-rows:1fr auto; }
+.main-content { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:var(--space-xl); gap:var(--space-2xl); overflow:hidden; }
+.brand { display:flex; align-items:center; gap:var(--space-sm); opacity:0; animation:fadeUp .6s var(--ease-out-expo) .1s forwards; }
+.brand-icon { width:28px; height:28px; background:var(--brand); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; position:relative; }
+.brand-icon::after { content:''; width:10px; height:10px; border:2px solid var(--text-on-brand); border-radius:2px; position:absolute; }
+.brand-name { font-family:var(--font-display); font-size:var(--text-lg); font-weight:600; letter-spacing:-0.02em; }
+.search-container { width:100%; max-width:620px; position:relative; opacity:0; animation:fadeUp .6s var(--ease-out-expo) .2s forwards; }
+.search-box { width:100%; display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-lg); background:var(--search-bg); border:1px solid var(--border-default); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); transition:all var(--duration-normal) var(--ease-out-quart); cursor:text; }
+.search-box:focus-within { border-color:var(--brand); box-shadow:var(--shadow-search), 0 0 0 3px oklch(from var(--brand) l c h / 0.12); }
+.search-icon { flex-shrink:0; width:20px; height:20px; color:var(--text-tertiary); transition:color var(--duration-fast); }
+.search-box:focus-within .search-icon { color:var(--brand); }
+.search-input { flex:1; border:none; background:none; font-family:var(--font-body); font-size:var(--text-md); color:var(--text-primary); outline:none; }
+.search-input::placeholder { color:var(--text-tertiary); }
+.kbd { display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px; font-family:var(--font-body); font-size:var(--text-xs); font-weight:500; color:var(--text-tertiary); background:var(--bg-tertiary); border:1px solid var(--border-subtle); border-radius:5px; }
+.search-results { position:absolute; top:calc(100% + var(--space-xs)); left:0; right:0; background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); overflow:hidden; display:none; z-index:100; }
+.search-results.visible { display:block; animation:slideDown .25s var(--ease-out-expo) forwards; }
+.search-section { padding:var(--space-xs); }
+.search-section + .search-section { border-top:1px solid var(--border-subtle); }
+.search-section-label { padding:var(--space-xs) var(--space-sm); font-size:var(--text-xs); font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; }
+.search-result-item { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-xs) var(--space-sm); border-radius:var(--radius-md); cursor:pointer; transition:background var(--duration-fast); }
+.search-result-item:hover, .search-result-item.selected { background:var(--bg-hover); }
+.search-result-icon { width:32px; height:32px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:var(--text-sm); font-weight:700; font-family:var(--font-display); }
+.search-result-info { flex:1; min-width:0; }
+.search-result-title { font-size:var(--text-sm); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.search-result-url { font-size:var(--text-xs); color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.search-result-tag { font-size:var(--text-xs); font-weight:500; color:var(--brand-muted); background:var(--brand-soft); padding:2px 8px; border-radius:var(--radius-full); flex-shrink:0; }
+.search-google { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); border-radius:var(--radius-md); cursor:pointer; transition:background var(--duration-fast); color:var(--text-secondary); font-size:var(--text-sm); }
+.search-google:hover { background:var(--bg-hover); }
+.search-google-icon { width:28px; height:28px; border-radius:var(--radius-sm); background:var(--accent-blue); display:flex; align-items:center; justify-content:center; color:white; font-size:var(--text-xs); font-weight:700; }
+.sites-section { width:100%; max-width:720px; opacity:0; animation:fadeUp .6s var(--ease-out-expo) .35s forwards; }
+.group-tabs { display:flex; gap:var(--space-2xs); margin-bottom:var(--space-lg); justify-content:center; }
+.group-tab { padding:var(--space-2xs) var(--space-md); font-size:var(--text-sm); font-weight:500; color:var(--text-tertiary); background:none; border:none; border-radius:var(--radius-full); cursor:pointer; transition:all var(--duration-fast); font-family:var(--font-body); }
+.group-tab:hover { color:var(--text-secondary); background:var(--bg-hover); }
+.group-tab.active { color:var(--text-on-brand); background:var(--brand); }
+.sites-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(88px, 1fr)); gap:var(--space-md); max-width:600px; margin:0 auto; }
+.site-item { display:flex; flex-direction:column; align-items:center; gap:var(--space-xs); padding:var(--space-sm); border-radius:var(--radius-md); cursor:pointer; transition:all var(--duration-normal) var(--ease-out-quart); text-decoration:none; color:inherit; }
+.site-item:hover { background:var(--bg-hover); transform:translateY(-2px); }
+.site-icon { width:48px; height:48px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:var(--text-lg); font-weight:700; font-family:var(--font-display); transition:transform var(--duration-normal) var(--ease-out-expo); }
+.site-item:hover .site-icon { transform:scale(1.08); }
+.site-icon.c-amber { background:oklch(0.90 0.08 80); color:oklch(0.40 0.12 80); }
+.site-icon.c-blue { background:oklch(0.90 0.06 240); color:oklch(0.45 0.14 240); }
+.site-icon.c-green { background:oklch(0.90 0.07 155); color:oklch(0.42 0.14 155); }
+.site-icon.c-rose { background:oklch(0.92 0.05 15); color:oklch(0.50 0.14 15); }
+.site-icon.c-violet { background:oklch(0.90 0.06 300); color:oklch(0.48 0.12 300); }
+.site-icon.c-teal { background:oklch(0.90 0.06 195); color:oklch(0.42 0.12 195); }
+.site-icon.c-orange { background:oklch(0.90 0.07 55); color:oklch(0.48 0.14 55); }
+.site-icon.c-slate { background:oklch(0.92 0.01 var(--brand-hue)); color:oklch(0.45 0.02 var(--brand-hue)); }
+[data-theme="dark"] .site-icon.c-amber { background:oklch(0.30 0.06 80); color:oklch(0.80 0.10 80); }
+[data-theme="dark"] .site-icon.c-blue { background:oklch(0.28 0.05 240); color:oklch(0.78 0.10 240); }
+[data-theme="dark"] .site-icon.c-green { background:oklch(0.28 0.06 155); color:oklch(0.78 0.12 155); }
+[data-theme="dark"] .site-icon.c-rose { background:oklch(0.28 0.04 15); color:oklch(0.80 0.10 15); }
+[data-theme="dark"] .site-icon.c-violet { background:oklch(0.28 0.05 300); color:oklch(0.78 0.10 300); }
+[data-theme="dark"] .site-icon.c-teal { background:oklch(0.28 0.05 195); color:oklch(0.78 0.10 195); }
+[data-theme="dark"] .site-icon.c-orange { background:oklch(0.30 0.06 55); color:oklch(0.78 0.12 55); }
+[data-theme="dark"] .site-icon.c-slate { background:oklch(0.25 0.01 var(--brand-hue)); color:oklch(0.72 0.02 var(--brand-hue)); }
+.site-name { font-size:var(--text-xs); color:var(--text-secondary); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px; }
+.toolbar { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) var(--space-xl); border-top:1px solid var(--border-subtle); background:var(--bg-secondary); opacity:0; animation:fadeIn .5s var(--ease-out-quart) .5s forwards; }
+.toolbar-group { display:flex; align-items:center; gap:var(--space-2xs); }
+.toolbar-btn { display:inline-flex; align-items:center; gap:var(--space-xs); padding:var(--space-2xs) var(--space-sm); font-family:var(--font-body); font-size:var(--text-sm); font-weight:500; color:var(--text-secondary); background:none; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); }
+.toolbar-btn:hover { color:var(--text-primary); background:var(--bg-hover); }
+.toolbar-btn.active { color:var(--brand); }
+.toolbar-btn svg { width:16px; height:16px; }
+.toolbar-divider { width:1px; height:20px; background:var(--border-subtle); margin:0 var(--space-2xs); }
+.theme-toggle { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:none; border:none; border-radius:var(--radius-sm); cursor:pointer; color:var(--text-secondary); transition:all var(--duration-fast); }
+.theme-toggle:hover { color:var(--text-primary); background:var(--bg-hover); }
+.theme-toggle svg { width:18px; height:18px; }
+.bookmark-panel { position:fixed; top:0; right:0; bottom:0; width:420px; background:var(--bg-elevated); border-left:1px solid var(--border-subtle); box-shadow:-8px 0 32px oklch(0 0 0 / 0.08); transform:translateX(100%); transition:transform var(--duration-slow) var(--ease-out-expo); z-index:200; display:flex; flex-direction:column; }
+.bookmark-panel.open { transform:translateX(0); }
+.panel-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg); border-bottom:1px solid var(--border-subtle); flex-shrink:0; }
+.panel-title { font-family:var(--font-display); font-size:var(--text-xl); font-weight:600; letter-spacing:-0.02em; }
+.panel-close { width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:none; border:none; border-radius:var(--radius-sm); cursor:pointer; color:var(--text-secondary); transition:all var(--duration-fast); }
+.panel-close:hover { background:var(--bg-hover); color:var(--text-primary); }
+.panel-filter { display:flex; gap:var(--space-xs); padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border-subtle); flex-shrink:0; overflow-x:auto; }
+.filter-chip { padding:var(--space-2xs) var(--space-sm); font-family:var(--font-body); font-size:var(--text-xs); font-weight:500; color:var(--text-secondary); background:var(--bg-tertiary); border:1px solid transparent; border-radius:var(--radius-full); cursor:pointer; white-space:nowrap; transition:all var(--duration-fast); }
+.filter-chip:hover { border-color:var(--border-default); }
+.filter-chip.active { color:var(--text-on-brand); background:var(--brand); border-color:transparent; }
+.bookmark-list { flex:1; overflow-y:auto; padding:var(--space-sm) var(--space-md); }
+.bookmark-group { margin-bottom:var(--space-md); }
+.bookmark-group-header { display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs); font-size:var(--text-xs); font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; }
+.bookmark-group-header svg { width:12px; height:12px; transition:transform var(--duration-fast); }
+.bookmark-group-header.collapsed svg { transform:rotate(-90deg); }
+.bookmark-group-count { font-weight:400; margin-left:2px; }
+.bookmark-entry { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-xs) var(--space-sm); border-radius:var(--radius-sm); cursor:pointer; transition:background var(--duration-fast); }
+.bookmark-entry:hover { background:var(--bg-hover); }
+.bookmark-favicon { width:20px; height:20px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.bookmark-entry-info { flex:1; min-width:0; }
+.bookmark-entry-title { font-size:var(--text-sm); font-weight:450; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bookmark-entry-url { font-size:11px; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bookmark-entry-actions { display:flex; gap:var(--space-2xs); opacity:0; transition:opacity var(--duration-fast); }
+.bookmark-entry:hover .bookmark-entry-actions { opacity:1; }
+.bk-btn { width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:none; border:none; border-radius:4px; cursor:pointer; color:var(--text-tertiary); transition:all var(--duration-fast); }
+.bk-btn:hover { color:var(--text-primary); background:var(--bg-active); }
+.settings-panel { position:fixed; top:0; right:0; bottom:0; width:380px; background:var(--bg-elevated); border-left:1px solid var(--border-subtle); box-shadow:-8px 0 32px oklch(0 0 0 / 0.08); transform:translateX(100%); transition:transform var(--duration-slow) var(--ease-out-expo); z-index:200; display:flex; flex-direction:column; }
+.settings-panel.open { transform:translateX(0); }
+.settings-body { flex:1; overflow-y:auto; padding:var(--space-md) var(--space-lg); }
+.settings-section { margin-bottom:var(--space-xl); }
+.settings-section-title { font-family:var(--font-display); font-size:var(--text-sm); font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:var(--space-md); }
+.settings-row { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) 0; }
+.settings-row + .settings-row { border-top:1px solid var(--border-subtle); }
+.settings-label { font-size:var(--text-sm); font-weight:450; }
+.settings-desc { font-size:var(--text-xs); color:var(--text-tertiary); margin-top:2px; }
+.ai-config-card { padding:var(--space-md); background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:var(--radius-md); margin-bottom:var(--space-md); }
+.ai-config-header { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.ai-status-dot { width:8px; height:8px; border-radius:50%; background:var(--accent-green); }
+.ai-config-label { font-size:var(--text-sm); font-weight:500; }
+.sel-input { width:100%; padding:var(--space-xs) var(--space-sm); font-family:var(--font-body); font-size:var(--text-sm); color:var(--text-primary); background:var(--bg-primary); border:1px solid var(--border-default); border-radius:var(--radius-sm); margin-bottom:var(--space-sm); outline:none; }
+.sel-input:focus { border-color:var(--brand); box-shadow:0 0 0 3px oklch(from var(--brand) l c h / 0.1); }
+.btn-primary { display:inline-flex; align-items:center; justify-content:center; padding:var(--space-xs) var(--space-md); font-family:var(--font-body); font-size:var(--text-sm); font-weight:600; color:var(--text-on-brand); background:var(--brand); border:none; border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); width:100%; margin-top:var(--space-sm); }
+.btn-primary:hover { background:var(--brand-deep); }
+.toggle { width:40px; height:22px; background:var(--bg-tertiary); border:1px solid var(--border-default); border-radius:var(--radius-full); position:relative; cursor:pointer; transition:all var(--duration-fast); flex-shrink:0; }
+.toggle::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:var(--bg-elevated); border-radius:50%; box-shadow:var(--shadow-sm); transition:transform var(--duration-fast) var(--ease-out-expo); }
+.toggle.on { background:var(--brand); border-color:var(--brand); }
+.toggle.on::after { transform:translateX(18px); }
+.btn-ghost { flex:none; padding:var(--space-2xs) var(--space-sm); font-family:var(--font-body); font-size:var(--text-sm); font-weight:500; color:var(--text-secondary); background:var(--bg-tertiary); border:none; border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); }
+.btn-ghost:hover { background:var(--bg-active); }
+.ai-classify-popup { position:fixed; top:var(--space-lg); right:var(--space-lg); width:340px; background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); z-index:300; overflow:hidden; display:none; }
+.ai-classify-popup.visible { display:block; animation:slideInRight .35s var(--ease-out-expo) forwards; }
+.classify-header { display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-md) var(--space-md) var(--space-sm); }
+.classify-ai-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; font-size:10px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--brand-muted); background:var(--brand-soft); border-radius:var(--radius-full); }
+.classify-title { font-size:var(--text-xs); color:var(--text-tertiary); }
+.classify-body { padding:0 var(--space-md) var(--space-md); }
+.classify-page-info { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); background:var(--bg-secondary); border-radius:var(--radius-sm); margin-bottom:var(--space-md); }
+.classify-page-icon { width:32px; height:32px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:var(--text-sm); font-weight:700; }
+.classify-page-title { font-size:var(--text-sm); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.classify-page-url { font-size:11px; color:var(--text-tertiary); }
+.classify-suggestions { display:flex; flex-direction:column; gap:var(--space-xs); margin-bottom:var(--space-md); }
+.classify-suggestion { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-xs) var(--space-sm); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); }
+.classify-suggestion:hover, .classify-suggestion.primary { border-color:var(--brand); background:var(--brand-soft); }
+.classify-folder-name { flex:1; font-size:var(--text-sm); font-weight:500; }
+.classify-confidence { font-size:var(--text-xs); font-weight:600; color:var(--brand-muted); }
+.classify-actions { display:flex; gap:var(--space-xs); }
+.classify-btn { flex:1; padding:var(--space-xs); font-family:var(--font-body); font-size:var(--text-sm); font-weight:500; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); }
+.classify-btn-confirm { color:var(--text-on-brand); background:var(--brand); }
+.classify-btn-confirm:hover { background:var(--brand-deep); }
+.classify-btn-other { color:var(--text-secondary); background:var(--bg-tertiary); }
+.classify-btn-other:hover { background:var(--bg-active); }
+.classify-auto-timer { text-align:center; font-size:var(--text-xs); color:var(--text-tertiary); padding-top:var(--space-xs); }
+.overlay { position:fixed; inset:0; background:oklch(0 0 0 / 0.25); z-index:150; opacity:0; pointer-events:none; transition:opacity var(--duration-normal); }
+.overlay.visible { opacity:1; pointer-events:auto; }
+[data-theme="dark"] .overlay { background:oklch(0 0 0 / 0.45); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInRight { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+@media(prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;} }
+.demo-controls { position:fixed; top:var(--space-md); left:var(--space-md); display:flex; flex-direction:column; gap:var(--space-xs); z-index:500; }
+.demo-btn { padding:var(--space-2xs) var(--space-sm); font-family:var(--font-body); font-size:var(--text-xs); font-weight:500; color:var(--text-secondary); background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:var(--radius-sm); cursor:pointer; transition:all var(--duration-fast); white-space:nowrap; }
+.demo-btn:hover { color:var(--text-primary); border-color:var(--brand); }
+.demo-label { font-size:10px; font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.08em; padding:var(--space-2xs) 0; }
+</style>
+</head>
+<body data-theme="light">
+<div class="demo-controls">
+  <span class="demo-label">交互演示</span>
+  <button class="demo-btn" onclick="toggleSearch()">搜索浮层</button>
+  <button class="demo-btn" onclick="toggleBookmarks()">书签面板</button>
+  <button class="demo-btn" onclick="toggleSettings()">设置面板</button>
+  <button class="demo-btn" onclick="toggleClassify()">AI 分类弹窗</button>
+  <button class="demo-btn" onclick="toggleTheme()">切换主题</button>
+</div>
+<div class="app">
+  <main class="main-content">
+    <div class="brand"><div class="brand-icon"></div><span class="brand-name">MarkPage</span></div>
+    <div class="search-container" id="searchContainer">
+      <div class="search-box" onclick="document.getElementById('searchInput').focus()">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="searchInput" type="text" placeholder="搜索书签或输入网址..." autocomplete="off" oninput="handleSearchInput(this.value)">
+        <span class="kbd">/</span>
+      </div>
+      <div class="search-results" id="searchResults">
+        <div class="search-section">
+          <div class="search-section-label">书签</div>
+          <div class="search-result-item selected">
+            <div class="search-result-icon c-slate">G</div>
+            <div class="search-result-info"><div class="search-result-title">GitHub - Where the world builds software</div><div class="search-result-url">github.com</div></div>
+            <span class="search-result-tag">开发工具</span>
+          </div>
+          <div class="search-result-item">
+            <div class="search-result-icon c-blue">G</div>
+            <div class="search-result-info"><div class="search-result-title">GitHub Actions Documentation</div><div class="search-result-url">docs.github.com/en/actions</div></div>
+            <span class="search-result-tag">技术文档</span>
+          </div>
+          <div class="search-result-item">
+            <div class="search-result-icon c-violet">G</div>
+            <div class="search-result-info"><div class="search-result-title">GitHub Copilot</div><div class="search-result-url">github.com/features/copilot</div></div>
+            <span class="search-result-tag">AI 工具</span>
+          </div>
+        </div>
+        <div class="search-section">
+          <div class="search-google">
+            <div class="search-google-icon">G</div>
+            <span>在 Google 中搜索 "github"</span>
+            <span class="kbd" style="margin-left:auto">↵</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sites-section">
+      <div class="group-tabs">
+        <button class="group-tab active">全部</button>
+        <button class="group-tab" onclick="setActiveTab(this)">工作</button>
+        <button class="group-tab" onclick="setActiveTab(this)">学习</button>
+        <button class="group-tab" onclick="setActiveTab(this)">工具</button>
+        <button class="group-tab" onclick="setActiveTab(this)">社交</button>
+      </div>
+      <div class="sites-grid">
+        <a class="site-item" href="#"><div class="site-icon c-slate">G</div><span class="site-name">GitHub</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-blue">N</div><span class="site-name">Notion</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-rose">F</div><span class="site-name">Figma</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-green">S</div><span class="site-name">Slack</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-amber">G</div><span class="site-name">Gmail</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-violet">L</div><span class="site-name">Linear</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-teal">V</div><span class="site-name">Vercel</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-orange">C</div><span class="site-name">Claude</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-blue">T</div><span class="site-name">Twitter</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-rose">Y</div><span class="site-name">YouTube</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-green">Z</div><span class="site-name">知乎</span></a>
+        <a class="site-item" href="#"><div class="site-icon c-slate" style="border:1px dashed var(--border-default);background:none;color:var(--text-tertiary);font-size:var(--text-xl);">+</div><span class="site-name" style="color:var(--text-tertiary)">添加</span></a>
+      </div>
+    </div>
+  </main>
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <button class="toolbar-btn active" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>首页</button>
+      <button class="toolbar-btn" onclick="toggleBookmarks()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>书签</button>
+    </div>
+    <div class="toolbar-group">
+      <button class="toolbar-btn" onclick="toggleSettings()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <div class="toolbar-divider"></div>
+      <button class="theme-toggle" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
+<div class="bookmark-panel" id="bookmarkPanel">
+  <div class="panel-header"><h2 class="panel-title">全部书签</h2><button class="panel-close" onclick="toggleBookmarks()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="panel-filter">
+    <button class="filter-chip active">全部</button>
+    <button class="filter-chip" onclick="setActiveFilter(this)">开发工具</button>
+    <button class="filter-chip" onclick="setActiveFilter(this)">技术文档</button>
+    <button class="filter-chip" onclick="setActiveFilter(this)">设计</button>
+    <button class="filter-chip" onclick="setActiveFilter(this)">AI 工具</button>
+    <button class="filter-chip" onclick="setActiveFilter(this)">未分类</button>
+  </div>
+  <div class="bookmark-list">
+    <div class="bookmark-group">
+      <div class="bookmark-group-header" onclick="toggleGroup(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>开发工具<span class="bookmark-group-count">· 6</span></div>
+      <div class="bookmark-group-items">
+        <div class="bookmark-entry"><div class="bookmark-favicon c-slate">G</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">GitHub</div><div class="bookmark-entry-url">github.com</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+        <div class="bookmark-entry"><div class="bookmark-favicon c-teal">V</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">Vercel</div><div class="bookmark-entry-url">vercel.com</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+        <div class="bookmark-entry"><div class="bookmark-favicon c-violet">L</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">Linear</div><div class="bookmark-entry-url">linear.app</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+      </div>
+    </div>
+    <div class="bookmark-group">
+      <div class="bookmark-group-header" onclick="toggleGroup(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>设计<span class="bookmark-group-count">· 4</span></div>
+      <div class="bookmark-group-items">
+        <div class="bookmark-entry"><div class="bookmark-favicon c-rose">F</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">Figma</div><div class="bookmark-entry-url">figma.com</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+        <div class="bookmark-entry"><div class="bookmark-favicon c-blue">D</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">Dribbble</div><div class="bookmark-entry-url">dribbble.com</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+      </div>
+    </div>
+    <div class="bookmark-group">
+      <div class="bookmark-group-header" onclick="toggleGroup(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>AI 工具<span class="bookmark-group-count">· 3</span></div>
+      <div class="bookmark-group-items">
+        <div class="bookmark-entry"><div class="bookmark-favicon c-orange">C</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">Claude</div><div class="bookmark-entry-url">claude.ai</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+        <div class="bookmark-entry"><div class="bookmark-favicon c-green">C</div><div class="bookmark-entry-info"><div class="bookmark-entry-title">ChatGPT</div><div class="bookmark-entry-url">chatgpt.com</div></div><div class="bookmark-entry-actions"><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="bk-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="panel-header"><h2 class="panel-title">设置</h2><button class="panel-close" onclick="toggleSettings()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="settings-body">
+    <div class="settings-section">
+      <div class="settings-section-title">AI 智能分类</div>
+      <div class="ai-config-card">
+        <div class="ai-config-header"><div class="ai-status-dot"></div><span class="ai-config-label">已连接</span></div>
+        <select class="sel-input"><option>OpenAI (gpt-4o-mini)</option><option>Anthropic (claude-haiku)</option><option>DeepSeek (deepseek-chat)</option><option>自定义 (OpenAI 兼容)</option></select>
+        <input class="sel-input" type="text" placeholder="粘贴你的密钥到这里..." style="margin-bottom:0">
+        <button class="btn-primary">验证连接</button>
+      </div>
+      <div class="settings-row"><div><div class="settings-label">自动分类新书签</div><div class="settings-desc">收藏时自动推荐分类</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="settings-row"><div><div class="settings-label">高置信度自动确认</div><div class="settings-desc">置信度 > 80% 时 5 秒后自动归类</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">外观</div>
+      <div class="settings-row"><div><div class="settings-label">主题</div></div><select class="sel-input" style="width:auto;margin:0"><option>跟随系统</option><option>亮色</option><option>暗色</option></select></div>
+      <div class="settings-row"><div><div class="settings-label">搜索框自动聚焦</div><div class="settings-desc">打开新标签页时光标自动定位到搜索框</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">搜索</div>
+      <div class="settings-row"><div><div class="settings-label">默认搜索引擎</div></div><select class="sel-input" style="width:auto;margin:0"><option>Google</option><option>Bing</option><option>DuckDuckGo</option><option>Baidu</option></select></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">数据管理</div>
+      <div class="settings-row"><div><div class="settings-label">导出书签</div><div class="settings-desc">导出为 JSON 或 HTML 格式</div></div><button class="btn-ghost">导出</button></div>
+      <div class="settings-row"><div><div class="settings-label">导入书签</div><div class="settings-desc">从文件导入书签数据</div></div><button class="btn-ghost">导入</button></div>
+    </div>
+  </div>
+</div>
+<div class="ai-classify-popup" id="classifyPopup">
+  <div class="classify-header">
+    <span class="classify-ai-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M16 14a4 4 0 0 0-8 0v4a4 4 0 0 0 8 0v-4z"/></svg>AI 分类</span>
+    <span class="classify-title">已为你找到最佳分类</span>
+  </div>
+  <div class="classify-body">
+    <div class="classify-page-info"><div class="classify-page-icon c-blue">M</div><div><div class="classify-page-title">MDN Web Docs</div><div class="classify-page-url">developer.mozilla.org</div></div></div>
+    <div class="classify-suggestions">
+      <div class="classify-suggestion primary"><span>📂</span><span class="classify-folder-name">技术文档</span><span class="classify-confidence">92%</span></div>
+      <div class="classify-suggestion"><span>📂</span><span class="classify-folder-name">开发工具</span><span class="classify-confidence">71%</span></div>
+    </div>
+    <div class="classify-actions"><button class="classify-btn classify-btn-confirm">确认分类</button><button class="classify-btn classify-btn-other">选择其他</button></div>
+    <div class="classify-auto-timer">5 秒后自动确认...</div>
+  </div>
+</div>
+<script>
+function handleSearchInput(v){document.getElementById('searchResults').classList.toggle('visible',v.length>0)}
+function toggleSearch(){var r=document.getElementById('searchResults'),i=document.getElementById('searchInput');if(r.classList.contains('visible')){r.classList.remove('visible');i.value=''}else{i.value='github';i.focus();r.classList.add('visible')}}
+function toggleTheme(){var b=document.body;b.setAttribute('data-theme',b.getAttribute('data-theme')==='dark'?'light':'dark')}
+function setActiveTab(e){document.querySelectorAll('.group-tab').forEach(function(t){t.classList.remove('active')});e.classList.add('active')}
+function setActiveFilter(e){document.querySelectorAll('.filter-chip').forEach(function(f){f.classList.remove('active')});e.classList.add('active')}
+function toggleGroup(h){h.classList.toggle('collapsed');var i=h.nextElementSibling;if(i)i.style.display=h.classList.contains('collapsed')?'none':'block'}
+function toggleBookmarks(){var p=document.getElementById('bookmarkPanel'),o=document.getElementById('overlay');document.getElementById('settingsPanel').classList.remove('open');p.classList.toggle('open');o.classList.toggle('visible',p.classList.contains('open'))}
+function toggleSettings(){var p=document.getElementById('settingsPanel'),o=document.getElementById('overlay');document.getElementById('bookmarkPanel').classList.remove('open');p.classList.toggle('open');o.classList.toggle('visible',p.classList.contains('open'))}
+function toggleClassify(){document.getElementById('classifyPopup').classList.toggle('visible')}
+function closeAllPanels(){document.getElementById('bookmarkPanel').classList.remove('open');document.getElementById('settingsPanel').classList.remove('open');document.getElementById('overlay').classList.remove('visible');document.getElementById('classifyPopup').classList.remove('visible')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var r=document.getElementById('searchResults');if(r.classList.contains('visible')){r.classList.remove('visible');document.getElementById('searchInput').value='';document.getElementById('searchInput').blur()}else closeAllPanels()}});
+document.addEventListener('keypress',function(e){var i=document.getElementById('searchInput');if(document.activeElement!==i&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!document.querySelector('.bookmark-panel.open,.settings-panel.open'))i.focus()});
+if(window.matchMedia('(prefers-color-scheme:dark)').matches)document.body.setAttribute('data-theme','dark');
+</script>
+</body>
+</html>
