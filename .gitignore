@@ -28,3 +28,12 @@ secrets/
 # 日志
 *.log
 npm-debug.log*
+
+# Claude Code 本地配置
+.claude/
+.impeccable.md
+
+# 设计稿 / 分析文档（非插件运行所需）
+design-prototype.html
+design-v2-linear.html
+用户体验旅程图分析.md
