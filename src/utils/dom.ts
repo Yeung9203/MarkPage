@@ -167,3 +167,24 @@ export function setCSSVars(
     el.style.setProperty(key, value);
   }
 }
+
+/**
+ * 打开一个链接
+ *
+ * 默认在当前标签页跳转；当事件带有 Cmd/Ctrl 或鼠标中键时，新开标签页。
+ *
+ * 使用示例：
+ *   on(btn, 'click', (e) => openLink('https://example.com', e));
+ *
+ * @param url - 目标地址
+ * @param e - 可选，鼠标或键盘事件，用于识别新标签页修饰键
+ */
+export function openLink(url: string, e?: MouseEvent | KeyboardEvent): void {
+  const newTab =
+    !!e && ((e as MouseEvent).metaKey || (e as MouseEvent).ctrlKey || (e as MouseEvent).button === 1);
+  if (newTab) {
+    window.open(url, '_blank');
+  } else {
+    window.location.href = url;
+  }
+}

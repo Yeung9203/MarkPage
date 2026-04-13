@@ -37,3 +37,7 @@ npm-debug.log*
 design-prototype.html
 design-v2-linear.html
 用户体验旅程图分析.md
+
+# 设计源文件（仅保留 public/icons 下的构建产物）
+/MarkPage.png
+/MarkPage-Round.png

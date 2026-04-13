@@ -20,7 +20,7 @@
  *   const header = renderHeader(bookmarks, pinnedSites, 47, toggleTheme);
  */
 
-import { h, on } from '@/utils/dom';
+import { h, on, openLink } from '@/utils/dom';
 import type { Bookmark } from '@/types';
 import { iconSearch, iconSun } from './icons';
 
@@ -229,6 +229,9 @@ export function renderHeader(
   // 点击搜索框区域聚焦输入框
   on(searchBox, 'click', () => searchInput.focus());
 
+  // 不做默认 focus：地址栏抢焦点的场景下，兜底方案会导致下拉误弹出。
+  // 用户可通过点击搜索框或 Cmd/Ctrl + K 主动聚焦。
+
   headerTop.appendChild(searchBox);
 
   // 元信息：书签计数 + 主题切换
@@ -289,7 +292,7 @@ export function renderHeader(
 
     on(pin, 'click', (e) => {
       e.preventDefault();
-      window.open(`https://${site.url}`, '_blank');
+      openLink(`https://${site.url}`, e as MouseEvent);
     });
 
     pinsContainer.appendChild(pin);
@@ -424,11 +427,11 @@ export function renderHeader(
   function bindNavEvents() {
     const items = inlineResults.querySelectorAll('[data-nav]');
     items.forEach(item => {
-      on(item as HTMLElement, 'click', () => {
+      on(item as HTMLElement, 'click', (e) => {
         const url = (item as HTMLElement).getAttribute('data-url');
         const searchTerm = (item as HTMLElement).getAttribute('data-search');
         if (url) {
-          window.open(url, '_blank');
+          openLink(url, e as MouseEvent);
         } else if (searchTerm) {
           searchInput.value = searchTerm;
           searchInput.focus();
@@ -469,7 +472,7 @@ export function renderHeader(
         (items[inlineIdx] as HTMLElement).click();
       } else {
         const q = searchInput.value;
-        if (q.trim()) window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank');
+        if (q.trim()) openLink('https://www.google.com/search?q=' + encodeURIComponent(q), e as KeyboardEvent);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -494,6 +497,8 @@ export function renderHeader(
     if (!isComposing) handleSearch(searchInput.value);
   });
   on(searchInput, 'focus', () => {
+    // 自动聚焦（页面首次加载）不展开下拉，避免遮挡书签列表
+    if (searchInput.dataset.autoFocus === '1') return;
     if (searchInput.value.trim()) {
       handleSearch(searchInput.value);
     } else {
@@ -575,7 +580,7 @@ export function refreshHeaderPins(pinnedSites: PinSite[]): void {
     pin.innerHTML = `<span class="pin-fav ${site.colorClass}">${site.letter}</span>${site.title}`;
     pin.addEventListener('click', (e) => {
       e.preventDefault();
-      window.open(`https://${site.url}`, '_blank');
+      openLink(`https://${site.url}`, e);
     });
     container.appendChild(pin);
   });

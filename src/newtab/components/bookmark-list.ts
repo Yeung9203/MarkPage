@@ -10,7 +10,7 @@
  *   document.querySelector('.main-content')?.appendChild(list);
  */
 
-import { h, on } from '@/utils/dom';
+import { h, on, openLink } from '@/utils/dom';
 import type { Bookmark, Category, TagDef } from '@/types';
 import { iconChevron, iconMore } from './icons';
 import { showContextMenu } from './context-menu';
@@ -243,9 +243,15 @@ export async function renderBookmarkList(
         row.style.background = '';
       });
 
-      // 点击行打开链接
+      // 点击行打开链接：默认在当前标签页，按住 Cmd/Ctrl/中键则新开
       on(row, 'click', (e) => {
         if ((e.target as HTMLElement).closest('.bk-act')) return;
+        openLink(bk.url, e as MouseEvent);
+      });
+      on(row, 'auxclick', (e) => {
+        if ((e as MouseEvent).button !== 1) return;
+        if ((e.target as HTMLElement).closest('.bk-act')) return;
+        e.preventDefault();
         window.open(bk.url, '_blank');
       });
 

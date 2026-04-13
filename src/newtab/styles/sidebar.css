@@ -23,18 +23,20 @@
 }
 
 .sidebar-logo-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-md);
-  background: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background-image: url('/icons/logo.png');
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
 }
 
 .sidebar-logo-text {
+  font-family: 'Space Grotesk', var(--font);
   font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-1);
 }
 
