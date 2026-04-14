@@ -16,6 +16,7 @@
  */
 
 import { h, on } from '@/utils/dom';
+import { t } from '@/utils/i18n';
 import type { Bookmark, ClassifyResult, Category } from '@/types';
 import { moveBookmark, getBookmarkTree, extractCategories, createFolder } from '@/services/bookmarks';
 import { saveClassifyHistory } from '@/services/ai';
@@ -122,7 +123,7 @@ async function showCategorySelector(bookmark: Bookmark): Promise<void> {
     if (categories.length === 0) {
       selector.appendChild(h('div', {
         style: 'padding:8px;font-size:12px;color:var(--text-3)',
-      }, '暂无分类'));
+      }, t('toast_no_categories')));
     } else {
       categories.forEach(cat => {
         const catBtn = h('button', {
@@ -143,7 +144,7 @@ async function showCategorySelector(bookmark: Bookmark): Promise<void> {
     console.error('[MarkPage] 获取分类列表失败:', error);
     selector.appendChild(h('div', {
       style: 'padding:8px;font-size:12px;color:var(--text-3)',
-    }, '加载分类失败'));
+    }, t('toast_load_categories_failed')));
   }
 
   // 移除倒计时文字和操作按钮区域
@@ -198,8 +199,8 @@ export function showAIToast(result: ClassifyResult, bookmark: Bookmark): void {
     style: 'display:flex;align-items:center;gap:6px;margin-bottom:10px',
   });
   header.innerHTML = `
-    <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:3px">AI 分类</span>
-    <span style="font-size:11px;color:var(--text-3)">已为你找到最佳分类</span>
+    <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:3px">${t('toast_ai_badge')}</span>
+    <span style="font-size:11px;color:var(--text-3)">${t('toast_best_match_found')}</span>
   `;
   const closeBtn = h('button', {
     style: 'margin-left:auto;width:20px;height:20px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--text-4);border-radius:4px',
@@ -268,14 +269,14 @@ export function showAIToast(result: ClassifyResult, bookmark: Bookmark): void {
   });
   const confirmBtn = h('button', {
     style: 'flex:1;padding:6px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:white;background:var(--accent);transition:all var(--fast)',
-  }, '确认分类');
+  }, t('toast_confirm'));
   on(confirmBtn, 'click', () => {
     confirmClassification(bookmark, result.category);
   });
 
   const otherBtn = h('button', {
     style: 'flex:1;padding:6px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3);transition:all var(--fast)',
-  }, '选择其他');
+  }, t('toast_choose_other'));
   on(otherBtn, 'click', () => {
     showCategorySelector(bookmark);
   });
@@ -289,13 +290,13 @@ export function showAIToast(result: ClassifyResult, bookmark: Bookmark): void {
     const timerEl = h('div', {
       id: 'aiToastTimer',
       style: 'text-align:center;font-size:11px;color:var(--text-4);margin-top:6px',
-    }, '5 秒后自动确认');
+    }, t('toast_auto_confirm_countdown', ['5']));
     toast.appendChild(timerEl);
 
     let countdown = 5;
     timerInterval = setInterval(() => {
       countdown--;
-      if (timerEl) timerEl.textContent = `${countdown} 秒后自动确认`;
+      if (timerEl) timerEl.textContent = t('toast_auto_confirm_countdown', [String(countdown)]);
       if (countdown <= 0) {
         // 自动确认：执行分类移动
         confirmClassification(bookmark, result.category);

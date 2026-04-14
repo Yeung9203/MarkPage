@@ -26,6 +26,7 @@ import {
 import { suggestTagsForBookmark } from '@/services/tag-ai';
 import { getSettings } from '@/services/storage';
 import { iconSparkle } from './icons';
+import { t } from '@/utils/i18n';
 
 /** 当前显示的单例实例 */
 let currentPopover: HTMLElement | null = null;
@@ -129,7 +130,7 @@ export function showTagPopover(
 
   const input = document.createElement('input');
   input.type = 'text';
-  input.placeholder = '输入或新建标签…';
+  input.placeholder = t('tag_searchPlaceholder');
   Object.assign(input.style, {
     flex: '1',
     background: 'transparent',
@@ -299,7 +300,7 @@ export function showTagPopover(
         alignItems: 'center',
         gap: '6px',
       } as CSSStyleDeclaration);
-      loading.innerHTML = `<span style="opacity:0.7">AI 分析中…</span>`;
+      loading.innerHTML = `<span style="opacity:0.7">${t('tag_aiAnalyzing')}</span>`;
       body.appendChild(loading);
     }
 
@@ -313,8 +314,8 @@ export function showTagPopover(
         textAlign: 'center',
       } as CSSStyleDeclaration);
       empty.textContent = query.trim()
-        ? '无匹配项，按 Enter 创建'
-        : '还没有标签，输入名称创建第一个';
+        ? t('tag_noMatchCreate')
+        : t('tag_empty');
       body.appendChild(empty);
     }
 
@@ -344,7 +345,7 @@ export function showTagPopover(
         body.appendChild(row);
       } else {
         const row = makeRow({
-          text: `创建 "${item.name}"`,
+          text: t('tag_createWithName', [item.name]),
           prefix: '+',
           active: isActive,
           selected: false,
@@ -412,7 +413,7 @@ export function showTagPopover(
         opacity: '0.85',
       } as CSSStyleDeclaration);
       badge.innerHTML = iconSparkle(12);
-      badge.title = 'AI 建议';
+      badge.title = t('tag_aiSuggestion');
       row.appendChild(badge);
     }
 

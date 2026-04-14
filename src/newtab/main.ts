@@ -18,6 +18,14 @@ import { suggestTagsForBookmark } from '@/services/tag-ai';
 import type { Settings, Bookmark, Category } from '@/types';
 import { $, on, setCSSVars } from '@/utils/dom';
 import { initScrollIndicator } from '@/utils/scroll-indicator';
+import { t } from '@/utils/i18n';
+
+// 更新文档标题为当前 locale 的文案
+try {
+  document.title = t('newtab_title');
+} catch {
+  // 忽略（e.g. 非扩展环境）
+}
 
 // 初始化滚动条显隐指示器（默认隐藏，滚动时显示）
 initScrollIndicator();

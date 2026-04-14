@@ -14,6 +14,7 @@
  */
 
 import { h, on } from '@/utils/dom';
+import { t } from '@/utils/i18n';
 import type { Category, Bookmark, TagDef } from '@/types';
 import { getPinnedSites, getRecentBookmarks, getAllBookmarks, createFolder, removeFolder, updateBookmark } from '@/services/bookmarks';
 import { getFrequentIds } from '@/services/storage';
@@ -66,7 +67,7 @@ function showIconPicker(anchor: HTMLElement, categoryName: string, btn: HTMLElem
   const searchWrap = h('div', { class: 'ip-search-wrap' });
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
-  searchInput.placeholder = '搜索图标...';
+  searchInput.placeholder = t('sidebar_iconPickerSearchPlaceholder');
   searchInput.className = 'ip-search-input';
   searchWrap.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
   searchWrap.appendChild(searchInput);
@@ -113,10 +114,10 @@ function showIconPicker(anchor: HTMLElement, categoryName: string, btn: HTMLElem
   function renderDefault() {
     body.innerHTML = '';
     // AI 推荐区
-    body.appendChild(createSection(`为「${categoryName}」推荐`, recommendations));
+    body.appendChild(createSection(t('sidebar_iconPickerRecommended', [categoryName]), recommendations));
 
     // 热门区
-    body.appendChild(createSection('热门', POPULAR_ICONS));
+    body.appendChild(createSection(t('sidebar_iconPickerPopular'), POPULAR_ICONS));
 
     // 按 group 分组
     const groups = new Map<string, string[]>();
@@ -136,10 +137,10 @@ function showIconPicker(anchor: HTMLElement, categoryName: string, btn: HTMLElem
     body.innerHTML = '';
     const results = searchIcons(query);
     if (results.length === 0) {
-      body.innerHTML = `<div class="ip-empty">未找到匹配的图标</div>`;
+      body.innerHTML = `<div class="ip-empty">${t('sidebar_iconPickerNoResults')}</div>`;
       return;
     }
-    body.appendChild(createSection(`搜索结果 · ${results.length} 个`, results.map(r => r.key)));
+    body.appendChild(createSection(t('sidebar_iconPickerSearchResults', [String(results.length)]), results.map(r => r.key)));
   }
 
   // 搜索输入事件
@@ -234,9 +235,9 @@ export function renderSidebar(
 
   // 主导航项（常用和最近添加使用占位数量，稍后异步更新）
   const navItems = [
-    { label: '全部书签', icon: iconGlobe(), count: totalCount, filter: 'all', countId: 'nav-count-all' },
-    { label: '常用', icon: iconStar(), count: 0, filter: 'frequent', countId: 'nav-count-frequent' },
-    { label: '最近添加', icon: iconClock(), count: 0, filter: 'recent', countId: 'nav-count-recent' },
+    { label: t('sidebar_allBookmarks'), icon: iconGlobe(), count: totalCount, filter: 'all', countId: 'nav-count-all' },
+    { label: t('sidebar_frequent'), icon: iconStar(), count: 0, filter: 'frequent', countId: 'nav-count-frequent' },
+    { label: t('sidebar_recent'), icon: iconClock(), count: 0, filter: 'recent', countId: 'nav-count-recent' },
   ];
 
   navItems.forEach((item, idx) => {
@@ -268,20 +269,20 @@ export function renderSidebar(
     class: 'sidebar-section-label sidebar-section-label-with-action',
   });
   label.innerHTML = `
-    <span>分类</span>
-    <button class="sidebar-section-add" title="新增一级文件夹" aria-label="新增一级文件夹">+</button>
+    <span>${t('sidebar_categoriesLabel')}</span>
+    <button class="sidebar-section-add" title="${t('sidebar_addTopFolderTitle')}" aria-label="${t('sidebar_addTopFolderTitle')}">+</button>
   `;
   const addTopFolderBtn = label.querySelector('.sidebar-section-add') as HTMLElement;
   on(addTopFolderBtn, 'click', async (e: MouseEvent) => {
     e.stopPropagation();
     try {
       // 默认创建在书签栏（id='1'）下，占位名称 "新文件夹"
-      const folder = await createFolder('新文件夹', '1');
+      const folder = await createFolder(t('sidebar_newFolderName'), '1');
       window.location.reload();
       void folder;
     } catch (error) {
       console.error('[MarkPage] 创建文件夹失败:', error);
-      showInlineToast('创建失败：' + (error as Error).message);
+      showInlineToast(t('sidebar_createFolderFailed', [(error as Error).message]));
     }
   });
   navSection.appendChild(label);
@@ -305,7 +306,7 @@ export function renderSidebar(
   const aiBtn = h('button', { class: 'sidebar-ai-btn' });
   aiBtn.innerHTML = `
     <span style="width:14px;height:14px;display:flex;align-items:center">${ICON_LIBRARY.sparkles(14)}</span>
-    整理书签
+    ${t('sidebar_organizeBookmarks')}
     <span style="margin-left:auto;font-size:9px;font-weight:600;letter-spacing:0.04em;color:var(--text-4);border:1px solid var(--border);border-radius:3px;padding:0 4px;line-height:16px">AI</span>
   `;
   on(aiBtn, 'click', () => onAI());
@@ -315,7 +316,7 @@ export function renderSidebar(
   const settingsBtn = h('button', { class: 'sidebar-ai-btn' });
   settingsBtn.innerHTML = `
     <span style="width:14px;height:14px;display:flex;align-items:center">${iconSettings(14)}</span>
-    设置
+    ${t('sidebar_settings')}
   `;
   on(settingsBtn, 'click', () => onSettings());
   footer.appendChild(settingsBtn);
@@ -349,7 +350,7 @@ async function renderTagsSection(
     container.innerHTML = '';
 
     // 区块标题
-    const labelRow = h('div', { class: 'sidebar-section-label' }, '标签');
+    const labelRow = h('div', { class: 'sidebar-section-label' }, t('sidebar_tagsLabel'));
     container.appendChild(labelRow);
 
     // 加载标签定义 + 使用计数 + 设置
@@ -369,7 +370,7 @@ async function renderTagsSection(
     if (defs.length === 0) {
       const empty = h('div', {
         style: 'padding:8px 12px;font-size:12px;color:var(--text-4);line-height:1.5',
-      }, '还没有标签 — 试试 AI 自动打标');
+      }, t('sidebar_tagsEmpty'));
       container.appendChild(empty);
 
       return;
@@ -397,9 +398,9 @@ async function renderTagsSection(
       });
       btn.innerHTML = `
         <span class="sidebar-item-icon" style="color:var(--text-4);font-size:14px;font-weight:600;line-height:1">#</span>
-        <span class="sidebar-tag-name" title="双击重命名">${escapeHtml(def.name)}</span>
+        <span class="sidebar-tag-name" title="${t('sidebar_tagRenameHint')}">${escapeHtml(def.name)}</span>
         <span class="sidebar-item-count sidebar-tag-count">${count}</span>
-        <span class="sidebar-tag-delete" title="删除标签" aria-label="删除标签">×</span>
+        <span class="sidebar-tag-delete" title="${t('sidebar_tagDeleteTitle')}" aria-label="${t('sidebar_tagDeleteTitle')}">×</span>
       `;
 
       const nameEl = btn.querySelector('.sidebar-tag-name') as HTMLElement;
@@ -427,7 +428,7 @@ async function renderTagsSection(
       // 点击 × 删除
       on(delEl, 'click', async (e: MouseEvent) => {
         e.stopPropagation();
-        if (!window.confirm(`确定删除标签 "${def.name}"？此操作不可撤销。`)) return;
+        if (!window.confirm(t('sidebar_tagConfirmDelete', [def.name]))) return;
         try {
           await deleteTag(def.id);
           renderTagsSection(container, sidebar, onNav);
@@ -435,7 +436,7 @@ async function renderTagsSection(
           await refreshAllRowTags();
         } catch (error) {
           console.error('[MarkPage] 删除标签失败:', error);
-          showInlineToast('删除失败');
+          showInlineToast(t('sidebar_deleteFailed'));
         }
       });
 
@@ -466,8 +467,8 @@ async function renderTagsSection(
       });
       const updateLabel = (expanded: boolean) => {
         toggleBtn.innerHTML = expanded
-          ? `<span class="sidebar-item-icon" style="color:var(--text-4)">▾</span>收起`
-          : `<span class="sidebar-item-icon" style="color:var(--text-4)">▸</span>展开全部 (${restTags.length})`;
+          ? `<span class="sidebar-item-icon" style="color:var(--text-4)">▾</span>${t('sidebar_collapse')}`
+          : `<span class="sidebar-item-icon" style="color:var(--text-4)">▸</span>${t('sidebar_expandAll', [String(restTags.length)])}`;
       };
       updateLabel(false);
       on(toggleBtn, 'click', () => {
@@ -515,7 +516,7 @@ function buildAIBatchButton(
   const total = untagged.length;
   btn.innerHTML = `
     <span style="width:14px;height:14px;display:flex;align-items:center">${iconAI(14)}</span>
-    + AI 补标全部 (${total})
+    ${t('sidebar_aiTagAll', [String(total)])}
   `;
   on(btn, 'click', async () => {
     console.log('[MarkPage] AI 补标按钮点击，未打标书签数:', untagged.length);
@@ -528,12 +529,12 @@ function buildAIBatchButton(
     try {
       const settings = await getSettings();
       if (!settings.ai?.apiKey) {
-        showInlineToast('请先在设置里配置 AI');
+        showInlineToast(t('sidebar_configureAIFirst'));
         (btn as HTMLButtonElement).disabled = false;
         return;
       }
       if (untagged.length === 0) {
-        showInlineToast('没有需要补标的书签');
+        showInlineToast(t('sidebar_noUntaggedBookmarks'));
         (btn as HTMLButtonElement).disabled = false;
         return;
       }
@@ -542,10 +543,10 @@ function buildAIBatchButton(
         untagged,
         existingTagNames,
         settings.ai,
-        (done, t) => {
+        (done, total2) => {
           btn.innerHTML = `
             <span style="width:14px;height:14px;display:flex;align-items:center">${iconAI(14)}</span>
-            AI 补标中 ${done}/${t}
+            ${t('sidebar_aiTaggingProgress', [String(done), String(total2)])}
           `;
         },
       );
@@ -579,13 +580,17 @@ function buildAIBatchButton(
 
       // 结果反馈
       if (writtenCount > 0) {
-        showInlineToast(`已为 ${writtenCount} 个书签打标${emptyCount > 0 ? `（${emptyCount} 个 AI 未给建议）` : ''}`);
+        showInlineToast(
+          emptyCount > 0
+            ? t('sidebar_aiTagResultPartial', [String(writtenCount), String(emptyCount)])
+            : t('sidebar_aiTagResult', [String(writtenCount)])
+        );
       } else {
-        showInlineToast('AI 未给出任何标签建议，可手动打标');
+        showInlineToast(t('sidebar_aiTagNoSuggestions'));
       }
     } catch (error) {
       console.error('[MarkPage] AI 批量补标失败:', error);
-      showInlineToast('AI 补标失败：' + (error as Error).message);
+      showInlineToast(t('sidebar_aiTagFailed', [(error as Error).message]));
       (btn as HTMLButtonElement).disabled = false;
     }
   });
@@ -617,7 +622,7 @@ function buildAICleanupButton(
   });
   btn.innerHTML = `
     <span style="width:14px;height:14px;display:flex;align-items:center">${ICON_LIBRARY.sparkles(14)}</span>
-    整理标签
+    ${t('sidebar_organizeTags')}
     <span style="margin-left:auto;font-size:9px;font-weight:600;letter-spacing:0.04em;color:var(--text-4);border:1px solid var(--border);border-radius:3px;padding:0 4px;line-height:16px">AI</span>
   `;
   on(btn, 'click', async () => {
@@ -627,14 +632,14 @@ function buildAICleanupButton(
     try {
       const settings = await getSettings();
       if (!settings.ai?.apiKey) {
-        showInlineToast('请先在设置里配置 AI');
+        showInlineToast(t('sidebar_configureAIFirst'));
         (btn as HTMLButtonElement).disabled = false;
         return;
       }
 
       btn.innerHTML = `
         <span style="width:14px;height:14px;display:flex;align-items:center">${ICON_LIBRARY.sparkles(14)}</span>
-        AI 分析中…
+        ${t('sidebar_aiAnalyzing')}
       `;
 
       const tagList = defs.map((d) => ({ name: d.name, count: counts[d.id] ?? 0 }));
@@ -682,10 +687,10 @@ function buildAICleanupButton(
       await renderTagsSection(container, sidebar, onNav);
       const { refreshAllRowTags } = await import('./bookmark-list');
       await refreshAllRowTags();
-      showInlineToast('标签已整理');
+      showInlineToast(t('sidebar_tagsOrganized'));
     } catch (error) {
       console.error('[MarkPage] AI 整理标签失败:', error);
-      showInlineToast('整理失败：' + (error as Error).message);
+      showInlineToast(t('sidebar_organizeFailed', [(error as Error).message]));
       (btn as HTMLButtonElement).disabled = false;
     }
   });
@@ -717,7 +722,7 @@ function showCleanupDialog(
 
     const header = h('div', {
       style: 'padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text-1)',
-    }, 'AI 整理建议');
+    }, t('sidebar_cleanupDialogTitle'));
     modal.appendChild(header);
 
     // 方向输入区（顶部）
@@ -725,11 +730,11 @@ function showCleanupDialog(
       style: 'padding:12px 18px;border-bottom:1px solid var(--border);background:var(--bg-2)',
     });
     directionWrap.innerHTML = `
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">对结果不满意？告诉 AI 你的想法（可选）</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">${t('sidebar_cleanupDirectionHint')}</div>
       <div style="display:flex;gap:6px">
-        <input type="text" class="cleanup-direction" placeholder="例如：保留 CSS / 再激进一些 / 不要删除具体技术名"
+        <input type="text" class="cleanup-direction" placeholder="${t('sidebar_cleanupDirectionPlaceholder')}"
           style="flex:1;min-width:0;padding:6px 10px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-1);border:1px solid var(--border);border-radius:5px;outline:none" />
-        <button class="cleanup-retry" style="padding:6px 12px;font-family:var(--font);font-size:12px;background:var(--bg-3);color:var(--text-1);border:1px solid var(--border);border-radius:5px;cursor:pointer;white-space:nowrap">重新分析</button>
+        <button class="cleanup-retry" style="padding:6px 12px;font-family:var(--font);font-size:12px;background:var(--bg-3);color:var(--text-1);border:1px solid var(--border);border-radius:5px;cursor:pointer;white-space:nowrap">${t('sidebar_cleanupReanalyze')}</button>
       </div>
     `;
     modal.appendChild(directionWrap);
@@ -747,10 +752,10 @@ function showCleanupDialog(
     });
     const cancelBtn = h('button', {
       style: 'padding:6px 14px;font-family:var(--font);font-size:12px;background:var(--bg-3);color:var(--text-1);border:none;border-radius:5px;cursor:pointer',
-    }, '取消');
+    }, t('common_cancel'));
     const okBtn = h('button', {
       style: 'padding:6px 14px;font-family:var(--font);font-size:12px;background:var(--accent);color:white;border:none;border-radius:5px;cursor:pointer',
-    }, '执行');
+    }, t('sidebar_cleanupExecute'));
     footer.appendChild(cancelBtn);
     footer.appendChild(okBtn);
     modal.appendChild(footer);
@@ -771,7 +776,7 @@ function showCleanupDialog(
       if (suggestion.merges.length === 0 && suggestion.deletes.length === 0) {
         body.appendChild(h('div', {
           style: 'padding:24px;text-align:center;color:var(--text-3);font-size:12px',
-        }, 'AI 没有给出整理建议。尝试在上方输入方向后重新分析。'));
+        }, t('sidebar_cleanupNoSuggestions')));
         okBtn.style.opacity = '0.5';
         (okBtn as HTMLButtonElement).disabled = true;
         return;
@@ -783,7 +788,7 @@ function showCleanupDialog(
         const sec = h('div', { style: 'margin-bottom:14px' });
         sec.appendChild(h('div', {
           style: 'font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px',
-        }, `合并 (${suggestion.merges.length})`));
+        }, t('sidebar_cleanupMergeSection', [String(suggestion.merges.length)])));
         suggestion.merges.forEach((g, i) => {
           mergeChecked.set(i, true);
           const row = h('label', {
@@ -807,7 +812,7 @@ function showCleanupDialog(
         const sec = h('div');
         sec.appendChild(h('div', {
           style: 'font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px',
-        }, `删除 (${suggestion.deletes.length})`));
+        }, t('sidebar_cleanupDeleteSection', [String(suggestion.deletes.length)])));
         suggestion.deletes.forEach((d, i) => {
           deleteChecked.set(i, true);
           const row = h('label', {
@@ -834,18 +839,18 @@ function showCleanupDialog(
     const doRetry = async (): Promise<void> => {
       const dir = directionInput.value.trim();
       retryBtn.disabled = true;
-      retryBtn.textContent = '分析中…';
-      body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:12px">AI 正在重新分析${dir ? '，参考你的方向…' : '…'}</div>`;
+      retryBtn.textContent = t('sidebar_cleanupAnalyzing');
+      body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:12px">${dir ? t('sidebar_cleanupReanalyzingWithDirection') : t('sidebar_cleanupReanalyzing')}</div>`;
       try {
         const next = await reAnalyze(dir);
         currentSuggestion = next;
         renderBody(currentSuggestion);
       } catch (error) {
         console.error('[MarkPage] 重新分析失败:', error);
-        body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--red);font-size:12px">重新分析失败：${escapeHtml((error as Error).message)}</div>`;
+        body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--red);font-size:12px">${t('sidebar_cleanupReanalyzeFailed', [escapeHtml((error as Error).message)])}</div>`;
       } finally {
         retryBtn.disabled = false;
-        retryBtn.textContent = '重新分析';
+        retryBtn.textContent = t('sidebar_cleanupReanalyze');
       }
     };
 
@@ -908,8 +913,8 @@ function showTagContextMenu(
     return btn;
   };
 
-  menu.appendChild(mkItem('重命名', false, async () => {
-    const name = window.prompt('新标签名', def.name);
+  menu.appendChild(mkItem(t('sidebar_rename'), false, async () => {
+    const name = window.prompt(t('sidebar_newTagName'), def.name);
     if (!name || name.trim() === '' || name.trim() === def.name) return;
     try {
       await renameTag(def.id, name.trim());
@@ -918,12 +923,12 @@ function showTagContextMenu(
       await refreshAllRowTags();
     } catch (error) {
       console.error('[MarkPage] 重命名标签失败:', error);
-      showInlineToast('重命名失败');
+      showInlineToast(t('sidebar_renameFailed'));
     }
   }));
 
-  menu.appendChild(mkItem('删除', true, async () => {
-    if (!window.confirm(`确定删除标签 "${def.name}"？此操作不可撤销。`)) return;
+  menu.appendChild(mkItem(t('common_delete'), true, async () => {
+    if (!window.confirm(t('sidebar_tagConfirmDelete', [def.name]))) return;
     try {
       await deleteTag(def.id);
       onChange();
@@ -931,7 +936,7 @@ function showTagContextMenu(
       await refreshAllRowTags();
     } catch (error) {
       console.error('[MarkPage] 删除标签失败:', error);
-      showInlineToast('删除失败');
+      showInlineToast(t('sidebar_deleteFailed'));
     }
   }));
 
@@ -997,7 +1002,7 @@ function startInlineRename(
       await refreshAllRowTags();
     } catch (error) {
       console.error('[MarkPage] 重命名标签失败:', error);
-      showInlineToast('重命名失败');
+      showInlineToast(t('sidebar_renameFailed'));
       nameEl.textContent = original;
     }
   };
@@ -1144,8 +1149,8 @@ function buildCategoryItem(
     <span class="sidebar-item-label">${escapeHtml(cat.name)}</span>
     <span class="sidebar-item-count sidebar-item-count-hidable">${cat.count}</span>
     <span class="sidebar-item-actions">
-      <button class="sidebar-item-act" data-act="add" title="新增子文件夹" aria-label="新增子文件夹">+</button>
-      <button class="sidebar-item-act sidebar-item-act-danger" data-act="del" title="删除文件夹" aria-label="删除文件夹">×</button>
+      <button class="sidebar-item-act" data-act="add" title="${t('sidebar_addSubFolderTitle')}" aria-label="${t('sidebar_addSubFolderTitle')}">+</button>
+      <button class="sidebar-item-act sidebar-item-act-danger" data-act="del" title="${t('sidebar_deleteFolderTitle')}" aria-label="${t('sidebar_deleteFolderTitle')}">×</button>
     </span>
   `;
 
@@ -1159,23 +1164,23 @@ function buildCategoryItem(
       const act = actBtn.getAttribute('data-act');
       if (act === 'add') {
         try {
-          await createFolder('新文件夹', cat.id);
+          await createFolder(t('sidebar_newFolderName'), cat.id);
           window.location.reload();
         } catch (error) {
           console.error('[MarkPage] 创建子文件夹失败:', error);
-          showInlineToast('创建失败：' + (error as Error).message);
+          showInlineToast(t('sidebar_createFolderFailed', [(error as Error).message]));
         }
       } else if (act === 'del') {
         const confirmMsg = cat.count > 0
-          ? `删除文件夹 "${cat.name}" 会连同其中 ${cat.count} 个书签一并删除，确定？`
-          : `确定删除文件夹 "${cat.name}"？`;
+          ? t('sidebar_confirmDeleteFolderWithItems', [cat.name, String(cat.count)])
+          : t('sidebar_confirmDeleteFolder', [cat.name]);
         if (!window.confirm(confirmMsg)) return;
         try {
           await removeFolder(cat.id);
           window.location.reload();
         } catch (error) {
           console.error('[MarkPage] 删除文件夹失败:', error);
-          showInlineToast('删除失败：' + (error as Error).message);
+          showInlineToast(t('sidebar_deleteFolderFailed', [(error as Error).message]));
         }
       }
       return;
@@ -1250,7 +1255,7 @@ function startCategoryInlineRename(labelEl: HTMLElement, cat: Category): void {
     } catch (error) {
       console.error('[MarkPage] 重命名文件夹失败:', error);
       labelEl.textContent = original;
-      showInlineToast('重命名失败：' + (error as Error).message);
+      showInlineToast(t('sidebar_renameFolderFailed', [(error as Error).message]));
     }
   };
 

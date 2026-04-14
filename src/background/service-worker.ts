@@ -16,6 +16,7 @@ import { getSettings, saveSettings, getDefaultSettings } from '@/services/storag
 import { getAllTagDefs, ensureTag, setBookmarkTags } from '@/services/tags';
 import { suggestTagsForBookmark } from '@/services/tag-ai';
 import type { Bookmark, AIConfig, ClassifyResult } from '@/types';
+import { t } from '@/utils/i18n';
 
 // ============================================================
 // 插件安装/更新事件
@@ -279,8 +280,12 @@ function notifyClassifyResult(
       chrome.notifications.create({
         type: 'basic',
         iconUrl: '/icons/icon128.png',
-        title: 'MarkPage 分类建议',
-        message: `"${bookmarkTitle}" → ${suggestedCategory} (${Math.round(confidence * 100)}%)`,
+        title: t('bg_notifyTitle'),
+        message: t('bg_notifyMessage', [
+          bookmarkTitle,
+          suggestedCategory,
+          String(Math.round(confidence * 100)),
+        ]),
       });
     }
   } catch (error) {

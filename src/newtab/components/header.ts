@@ -23,6 +23,7 @@
 import { h, on, openLink } from '@/utils/dom';
 import type { Bookmark } from '@/types';
 import { iconSearch, iconSun } from './icons';
+import { t } from '@/utils/i18n';
 
 /** 常用站点数据 */
 interface PinSite {
@@ -198,7 +199,7 @@ export function renderHeader(
   const searchData: SearchItem[] = bookmarks.map(bk => ({
     title: bk.title,
     url: bk.url.replace(/^https?:\/\//, ''),
-    tag: bk.category || '未分类',
+    tag: bk.category || t('category_uncategorized'),
     color: getColorClass(bk.title),
     letter: bk.title.charAt(0).toUpperCase(),
     pinyin: '',
@@ -218,7 +219,7 @@ export function renderHeader(
   const searchInput = document.createElement('input');
   searchInput.className = 'header-search-input';
   searchInput.type = 'text';
-  searchInput.placeholder = '搜索书签或输入网址...';
+  searchInput.placeholder = t('search_placeholder');
   searchInput.autocomplete = 'off';
   searchInput.id = 'headerSearchInput';
   searchBox.appendChild(searchInput);
@@ -240,7 +241,7 @@ export function renderHeader(
   const countEl = h('span', {
     style: 'font-size:11px;color:var(--text-4);font-variant-numeric:tabular-nums;white-space:nowrap',
     id: 'headerCount',
-  }, `${totalCount} 个书签`);
+  }, t('header_bookmarkCount', [String(totalCount)]));
   meta.appendChild(countEl);
 
   const themeBtn = h('button', {
@@ -271,7 +272,7 @@ export function renderHeader(
     const empty = h('div', {
       class: 'header-pins-empty',
       style: 'padding:4px 8px;font-size:11px;color:var(--text-4)',
-    }, '在任意书签上右键 → 设为常用，即可在此显示');
+    }, t('header_pinsEmpty'));
     pinsContainer.appendChild(empty);
   }
 
@@ -313,7 +314,7 @@ export function renderHeader(
 
     // 最近搜索
     if (searchHistory.length > 0) {
-      html += '<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">最近搜索</div>';
+      html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_recentSearches')}</div>`;
       searchHistory.forEach(term => {
         html += `<div class="ir-item" data-nav="true" data-search="${term}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
           <span style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--text-4)">${iconSearch(14)}</span>
@@ -324,7 +325,7 @@ export function renderHeader(
     }
 
     // 最近访问
-    html += '<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">最近访问</div>';
+    html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_recentVisits')}</div>`;
     recentVisits.forEach(v => {
       html += `<div class="ir-item" data-nav="true" data-url="https://${v.url}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
         <span class="${v.color}" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">${v.letter}</span>
@@ -334,7 +335,7 @@ export function renderHeader(
     });
     html += '</div>';
 
-    html += '<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> 导航</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> 打开</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> 关闭</span></div>';
+    html += `<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> ${t('header_shortcut_nav')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> ${t('header_shortcut_open')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> ${t('header_shortcut_close')}</span></div>`;
 
     inlineResults.innerHTML = html;
     inlineResults.classList.add('visible');
@@ -373,13 +374,13 @@ export function renderHeader(
       html += `<div style="margin-bottom:4px">
         <div class="ir-item active" data-nav="true" data-url="https://${cleanUrl}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
           <span class="f-blue" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px">↗</span>
-          <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">直接访问 <mark>${cleanUrl}</mark></div><div style="font-size:10px;color:var(--text-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">按 Enter 打开网页</div></div>
+          <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t('header_urlDirect', [`<mark>${cleanUrl}</mark>`])}</div><div style="font-size:10px;color:var(--text-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t('header_urlDirectHint')}</div></div>
         </div></div>`;
     }
 
     // 书签结果
     if (matched.length > 0) {
-      html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">书签 \u00B7 ${matched.length} 个匹配</div>`;
+      html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_bookmarksMatched', [String(matched.length)])}</div>`;
       matched.forEach((m, i) => {
         const isFirst = !urlDirect && i === 0;
         html += `<div class="ir-item${isFirst ? ' active' : ''}" data-nav="true" data-url="https://${m.data.url}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
@@ -396,18 +397,18 @@ export function renderHeader(
       html += `<div style="margin-bottom:4px">
         <div style="padding:16px 6px;text-align:center;">
           <div style="font-size:20px;margin-bottom:6px;opacity:0.3">\uD83D\uDD0D</div>
-          <div style="font-size:12px;color:var(--text-3)">未找到匹配 "${q}" 的书签</div>
-          <div style="font-size:11px;color:var(--text-4);margin-top:4px">试试用 Google 搜索，或检查拼写</div>
+          <div style="font-size:12px;color:var(--text-3)">${t('header_noMatch', [q])}</div>
+          <div style="font-size:11px;color:var(--text-4);margin-top:4px">${t('header_noMatchHint')}</div>
         </div></div>`;
     }
 
     // Google 搜索
     html += `<div style="margin-bottom:4px"><div class="ir-google" data-nav="true" data-url="https://www.google.com/search?q=${encodeURIComponent(q)}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;color:var(--text-3);font-size:12px">
       ${iconSearch(14)}
-      搜索 "<strong>${q}</strong>" \u2192 Google</div></div>`;
+      ${t('header_googleSearch', [`<strong>${q}</strong>`])}</div></div>`;
 
     // 底栏快捷键提示
-    html += '<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> 导航</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> 打开</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> 清除</span></div>';
+    html += `<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> ${t('header_shortcut_nav')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> ${t('header_shortcut_open')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> ${t('header_shortcut_clear')}</span></div>`;
 
     inlineResults.innerHTML = html;
     inlineResults.classList.add('visible');
@@ -563,7 +564,7 @@ export function refreshHeaderPins(pinnedSites: PinSite[]): void {
     const empty = document.createElement('div');
     empty.className = 'header-pins-empty';
     empty.style.cssText = 'padding:4px 8px;font-size:11px;color:var(--text-4)';
-    empty.textContent = '在任意书签上右键 → 设为常用，即可在此显示';
+    empty.textContent = t('header_pinsEmpty');
     container.appendChild(empty);
     return;
   }

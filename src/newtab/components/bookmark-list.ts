@@ -18,6 +18,7 @@ import { getAllTagDefs } from '@/services/tags';
 import { getFrequentIds } from '@/services/storage';
 import { getCategoryIcon } from './category-icons';
 import { showTagPopover } from './tag-popover';
+import { t } from '@/utils/i18n';
 
 /** 分类名到图标样式的映射 */
 const categoryStyleMap: Record<string, { cssClass: string; letter: string; inlineStyle?: string }> = {
@@ -148,7 +149,7 @@ export async function renderBookmarkList(
   initCategoryGroups(categories);
 
   bookmarks.forEach(bk => {
-    const catName = bk.category || '未分类';
+    const catName = bk.category || t('category_uncategorized');
     if (!groups.has(catName)) groups.set(catName, []);
     groups.get(catName)!.push(bk);
   });
@@ -334,7 +335,7 @@ export function filterBookmarkGroups(filter: string): void {
         (row as HTMLElement).style.display = '';
       });
     });
-    if (headerCount) headerCount.textContent = `${countAllBookmarks()} 个书签`;
+    if (headerCount) headerCount.textContent = t('bk_count', [String(countAllBookmarks())]);
 
   } else if (filter === 'frequent') {
     // 只显示用户手动标记为常用的书签（data-frequent="true"）
@@ -354,7 +355,7 @@ export function filterBookmarkGroups(filter: string): void {
       });
       (g as HTMLElement).style.display = groupHasVisible ? '' : 'none';
     });
-    if (headerCount) headerCount.textContent = `${visibleCount} 个常用`;
+    if (headerCount) headerCount.textContent = t('bk_countFrequent', [String(visibleCount)]);
 
   } else if (filter === 'recent') {
     // 只显示最近 30 天添加的书签，按 dateAdded 倒序
@@ -389,7 +390,7 @@ export function filterBookmarkGroups(filter: string): void {
       });
       (g as HTMLElement).style.display = groupHasVisible ? '' : 'none';
     });
-    if (headerCount) headerCount.textContent = `${visibleCount} 个最近添加`;
+    if (headerCount) headerCount.textContent = t('bk_countRecent', [String(visibleCount)]);
 
   } else if (filter.startsWith('tag:')) {
     // 按标签 ID 筛选
@@ -410,7 +411,7 @@ export function filterBookmarkGroups(filter: string): void {
       });
       (g as HTMLElement).style.display = groupHasVisible ? '' : 'none';
     });
-    if (headerCount) headerCount.textContent = `${visibleCount} 个书签`;
+    if (headerCount) headerCount.textContent = t('bk_count', [String(visibleCount)]);
 
   } else if (filter.startsWith('category:')) {
     // 支持多分类（含子孙）匹配，名称用 | 分隔
@@ -429,7 +430,7 @@ export function filterBookmarkGroups(filter: string): void {
         (g as HTMLElement).style.display = 'none';
       }
     });
-    if (headerCount) headerCount.textContent = `${visibleCount} 个书签`;
+    if (headerCount) headerCount.textContent = t('bk_count', [String(visibleCount)]);
   }
 }
 
@@ -581,7 +582,7 @@ function renderTagChips(
     const placeholder = document.createElement('button');
     placeholder.type = 'button';
     placeholder.textContent = '＋';
-    placeholder.title = '添加标签';
+    placeholder.title = t('bk_addTagTitle');
     Object.assign(placeholder.style, {
       height: '18px',
       padding: '0 6px',
@@ -657,7 +658,7 @@ function renderTagChips(
 function makeChip(name: string, tagId: string): HTMLElement {
   const chip = document.createElement('span');
   chip.textContent = name;
-  chip.title = `筛选 #${name}`;
+  chip.title = t('bk_filterByTag', [name]);
   chip.setAttribute('data-tag-id', tagId);
   Object.assign(chip.style, {
     height: '18px',

@@ -21,6 +21,7 @@ import {
 } from '@/services/bookmarks';
 import { getSettings, onSettingsChange } from '@/services/storage';
 import type { ClassifyResult, Settings, Category } from '@/types';
+import { t } from '@/utils/i18n';
 
 /** 弹窗根元素 */
 let popupRoot: HTMLElement | null = null;
@@ -130,7 +131,7 @@ async function init(): Promise<void> {
   if (!popupRoot) return;
 
   // 显示加载状态
-  popupRoot.innerHTML = '<div class="popup-loading">加载中...</div>';
+  popupRoot.innerHTML = `<div class="popup-loading">${escapeHtml(t('popup_loading'))}</div>`;
 
   try {
     // 并行获取所需数据
@@ -154,7 +155,7 @@ async function init(): Promise<void> {
     applyTheme(settings);
 
     if (!tabInfo) {
-      popupRoot.innerHTML = '<div class="popup-error">无法获取当前页面信息</div>';
+      popupRoot.innerHTML = `<div class="popup-error">${escapeHtml(t('popup_errorNoTab'))}</div>`;
       return;
     }
 
@@ -189,7 +190,7 @@ async function init(): Promise<void> {
   } catch (error) {
     console.error('[MarkPage] 弹窗初始化失败:', error);
     if (popupRoot) {
-      popupRoot.innerHTML = '<div class="popup-error">初始化失败，请重试</div>';
+      popupRoot.innerHTML = `<div class="popup-error">${escapeHtml(t('popup_errorInitFailed'))}</div>`;
     }
   }
 }
@@ -244,7 +245,7 @@ function renderAnalyzing(tabInfo: { title: string; url: string }): void {
       </div>
       <div class="popup-classify-result">
         <div class="popup-classify-header">
-          <span class="popup-ai-badge">AI</span> 正在分析最佳分类...
+          <span class="popup-ai-badge">${escapeHtml(t('popup_aiBadge'))}</span> ${escapeHtml(t('popup_aiAnalyzing'))}
         </div>
         <div class="popup-analyzing">
           <div class="popup-skeleton popup-skeleton--main"></div>
@@ -292,22 +293,22 @@ function renderPopup(
     html += `
       <div class="popup-status popup-status--saved">
         <span class="popup-status-icon">&#10003;</span>
-        <span>已收藏</span>
+        <span>${escapeHtml(t('popup_statusSaved'))}</span>
       </div>
     `;
   } else if (currentSettings?.ai.enabled && currentSettings.ai.apiKey) {
     // AI 已配置但分类失败：提供重试或直接手动收藏
     html += `
       <div class="popup-status" style="color:var(--text-3);font-size:12px">
-        AI 分析暂不可用，请手动选择分类
+        ${escapeHtml(t('popup_aiUnavailable'))}
       </div>
       <div class="popup-actions">
         <button class="popup-btn popup-btn--primary" id="btn-save">
-          <span>&#9733;</span> 收藏
+          <span>&#9733;</span> ${escapeHtml(t('popup_btnSave'))}
         </button>
       </div>
       <div class="popup-folder-select">
-        <label>保存到：</label>
+        <label>${escapeHtml(t('popup_labelSaveTo'))}</label>
         <select id="folder-select">
           ${renderFolderOptions(currentCategories)}
         </select>
@@ -318,11 +319,11 @@ function renderPopup(
     html += `
       <div class="popup-actions">
         <button class="popup-btn popup-btn--primary" id="btn-save">
-          <span>&#9733;</span> 收藏
+          <span>&#9733;</span> ${escapeHtml(t('popup_btnSave'))}
         </button>
       </div>
       <div class="popup-folder-select">
-        <label>保存到：</label>
+        <label>${escapeHtml(t('popup_labelSaveTo'))}</label>
         <select id="folder-select">
           ${renderFolderOptions(currentCategories)}
         </select>
@@ -392,7 +393,7 @@ function renderClassifyLayout(
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M5 12h14"/>
         </svg>
-        <span class="popup-folder-card-name">新建 "${escapeHtml(result.newCategory)}"</span>
+        <span class="popup-folder-card-name">${escapeHtml(t('popup_createNewCategory', [result.newCategory]))}</span>
       </button>
     `;
   }
@@ -400,8 +401,8 @@ function renderClassifyLayout(
   return `
     <div class="popup-container popup-classify-layout">
       <div class="popup-classify-top">
-        <span class="popup-ai-badge">AI 分类</span>
-        <span class="popup-classify-subtitle">已为你找到最佳分类</span>
+        <span class="popup-ai-badge">${escapeHtml(t('popup_aiCategoryBadge'))}</span>
+        <span class="popup-classify-subtitle">${escapeHtml(t('popup_aiFoundBestCategory'))}</span>
       </div>
 
       <div class="popup-page-card">
@@ -418,8 +419,8 @@ function renderClassifyLayout(
       </div>
 
       <div class="popup-classify-actions">
-        <button class="popup-btn popup-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">确认分类 (${mainPercent}%)</button>
-        <button class="popup-btn popup-btn--secondary" id="btn-other">选择其他</button>
+        <button class="popup-btn popup-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">${escapeHtml(t('popup_confirmWithPercent', [String(mainPercent)]))}</button>
+        <button class="popup-btn popup-btn--secondary" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
       </div>
     </div>
   `;
@@ -440,7 +441,7 @@ function renderClassifyResult(
 
   let html = `
     <div class="popup-classify-result">
-      <div class="popup-classify-header">AI 分类建议</div>
+      <div class="popup-classify-header">${escapeHtml(t('popup_aiSuggestion'))}</div>
       <div class="popup-classify-main">
         <span class="popup-classify-category">${escapeHtml(result.category)}</span>
         <span class="popup-classify-confidence">${confidencePercent}%</span>
@@ -449,7 +450,7 @@ function renderClassifyResult(
 
   // 备选分类
   if (result.alternatives.length > 0) {
-    html += '<div class="popup-classify-alts"><span>备选：</span>';
+    html += `<div class="popup-classify-alts"><span>${escapeHtml(t('popup_alternatives'))}</span>`;
     result.alternatives.forEach((alt) => {
       html += `<button class="popup-alt-btn" data-category="${escapeHtml(alt.category)}">${escapeHtml(alt.category)}</button>`;
     });
@@ -458,13 +459,13 @@ function renderClassifyResult(
 
   // 新分类建议
   if (result.newCategory) {
-    html += `<div class="popup-classify-new">建议新分类：<strong>${escapeHtml(result.newCategory)}</strong></div>`;
+    html += `<div class="popup-classify-new">${escapeHtml(t('popup_suggestNewCategory'))}<strong>${escapeHtml(result.newCategory)}</strong></div>`;
   }
 
   html += `
       <div class="popup-classify-actions">
-        <button class="popup-btn popup-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">确认分类</button>
-        <button class="popup-btn popup-btn--secondary" id="btn-other">选择其他</button>
+        <button class="popup-btn popup-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">${escapeHtml(t('popup_confirm'))}</button>
+        <button class="popup-btn popup-btn--secondary" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
       </div>
     </div>
   `;
@@ -553,7 +554,7 @@ function bindEvents(
       const confirmBtn = document.getElementById('btn-confirm');
       if (confirmBtn) {
         confirmBtn.setAttribute('data-category', category);
-        confirmBtn.textContent = pct ? `确认分类 (${pct})` : '确认分类';
+        confirmBtn.textContent = pct ? t('popup_confirmWithPct', [pct]) : t('popup_confirm');
       }
     });
   });
@@ -575,7 +576,7 @@ async function handleClassifyAndSave(tabInfo: { title: string; url: string }): P
   const btn = document.getElementById('btn-classify') as HTMLButtonElement | null;
   if (btn) {
     btn.disabled = true;
-    btn.textContent = '分析中...';
+    btn.textContent = t('popup_analyzing');
   }
 
   try {
@@ -595,7 +596,7 @@ async function handleClassifyAndSave(tabInfo: { title: string; url: string }): P
     console.error('[MarkPage] 收藏并分类失败:', error);
     if (btn) {
       btn.disabled = false;
-      btn.textContent = '分类失败，重试';
+      btn.textContent = t('popup_classifyRetry');
     }
   }
 }
@@ -681,7 +682,7 @@ async function handleConfirmClassify(
         <div class="popup-container">
           <div class="popup-status popup-status--saved">
             <span class="popup-status-icon">&#10003;</span>
-            <span>已收藏到 "${escapeHtml(category)}"</span>
+            <span>${escapeHtml(t('popup_savedToCategory', [category]))}</span>
           </div>
         </div>
       `;
@@ -698,7 +699,7 @@ async function handleConfirmClassify(
     if (popupRoot) {
       popupRoot.innerHTML = `
         <div class="popup-container">
-          <div class="popup-error">收藏失败：${escapeHtml((error as Error).message || '未知错误')}</div>
+          <div class="popup-error">${escapeHtml(t('popup_saveFailed', [(error as Error).message || t('popup_unknownError')]))}</div>
         </div>
       `;
     }
@@ -737,18 +738,18 @@ function handleSelectOther(tabInfo: { title: string; url: string }): void {
   popupRoot.innerHTML = `
     <div class="popup-container">
       <div class="popup-header">
-        <div class="popup-title">选择分类</div>
+        <div class="popup-title">${escapeHtml(t('popup_chooseCategory'))}</div>
         <div class="popup-url">${escapeHtml(tabInfo.title)}</div>
       </div>
       <div class="popup-folder-list" id="folder-list-other">
         ${renderFolderItems(currentCategories)}
       </div>
       <div class="popup-new-folder">
-        <input id="new-folder-name" type="text" placeholder="或创建新分类..." />
-        <button class="popup-btn popup-btn--small popup-btn--primary" id="btn-new-folder">创建</button>
+        <input id="new-folder-name" type="text" placeholder="${escapeHtml(t('popup_newCategoryPlaceholder'))}" />
+        <button class="popup-btn popup-btn--small popup-btn--primary" id="btn-new-folder">${escapeHtml(t('popup_createBtn'))}</button>
       </div>
       <div class="popup-actions">
-        <button class="popup-btn popup-btn--secondary" id="btn-back">返回</button>
+        <button class="popup-btn popup-btn--secondary" id="btn-back">${escapeHtml(t('popup_back'))}</button>
       </div>
     </div>
   `;

@@ -1,0 +1,827 @@
+{
+  "extName": {
+    "message": "MarkPage",
+    "description": "Extension name shown in Chrome Web Store and toolbar."
+  },
+  "extDesc": {
+    "message": "Smart bookmark manager — AI auto-tagging, powerful search, and a beautiful new tab.",
+    "description": "Extension short description (<132 chars)."
+  },
+  "common_save": {
+    "message": "Save"
+  },
+  "common_cancel": {
+    "message": "Cancel"
+  },
+  "common_delete": {
+    "message": "Delete"
+  },
+  "common_bookmarkCount": {
+    "message": "$count$ bookmarks",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ctx_copyLink": {
+    "message": "Copy link"
+  },
+  "ctx_editBookmark": {
+    "message": "Edit bookmark"
+  },
+  "ctx_editTags": {
+    "message": "Edit tags"
+  },
+  "ctx_moveTo": {
+    "message": "Move to..."
+  },
+  "ctx_pinFrequent": {
+    "message": "Pin as frequent"
+  },
+  "ctx_unpinFrequent": {
+    "message": "Remove from frequent"
+  },
+  "ctx_delete": {
+    "message": "Delete"
+  },
+  "ctx_editPlaceholderTitle": {
+    "message": "Title"
+  },
+  "ctx_moveToTitle": {
+    "message": "Move to"
+  },
+  "ctx_noCategories": {
+    "message": "No categories available"
+  },
+  "ctx_loadCategoriesFailed": {
+    "message": "Failed to load categories"
+  },
+  "sidebar_allBookmarks": {
+    "message": "All bookmarks"
+  },
+  "sidebar_frequent": {
+    "message": "Frequent"
+  },
+  "sidebar_recent": {
+    "message": "Recently added"
+  },
+  "sidebar_categoriesLabel": {
+    "message": "Categories"
+  },
+  "sidebar_tagsLabel": {
+    "message": "Tags"
+  },
+  "sidebar_settings": {
+    "message": "Settings"
+  },
+  "sidebar_organizeBookmarks": {
+    "message": "Organize bookmarks"
+  },
+  "sidebar_organizeTags": {
+    "message": "Organize tags"
+  },
+  "sidebar_addTopFolderTitle": {
+    "message": "Add top-level folder"
+  },
+  "sidebar_addSubFolderTitle": {
+    "message": "Add subfolder"
+  },
+  "sidebar_deleteFolderTitle": {
+    "message": "Delete folder"
+  },
+  "sidebar_newFolderName": {
+    "message": "New folder"
+  },
+  "sidebar_createFolderFailed": {
+    "message": "Failed to create folder: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_deleteFolderFailed": {
+    "message": "Failed to delete folder: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_renameFolderFailed": {
+    "message": "Failed to rename folder: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_confirmDeleteFolder": {
+    "message": "Delete folder \"$name$\"?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_confirmDeleteFolderWithItems": {
+    "message": "Deleting folder \"$name$\" will also remove the $count$ bookmark(s) inside. Continue?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_iconPickerSearchPlaceholder": {
+    "message": "Search icons..."
+  },
+  "sidebar_iconPickerRecommended": {
+    "message": "Recommended for \"$name$\"",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_iconPickerPopular": {
+    "message": "Popular"
+  },
+  "sidebar_iconPickerNoResults": {
+    "message": "No matching icons"
+  },
+  "sidebar_iconPickerSearchResults": {
+    "message": "Results · $count$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_tagsEmpty": {
+    "message": "No tags yet — try AI auto-tagging"
+  },
+  "sidebar_tagRenameHint": {
+    "message": "Double-click to rename"
+  },
+  "sidebar_tagDeleteTitle": {
+    "message": "Delete tag"
+  },
+  "sidebar_tagConfirmDelete": {
+    "message": "Delete tag \"$name$\"? This cannot be undone.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_expandAll": {
+    "message": "Show all ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_collapse": {
+    "message": "Collapse"
+  },
+  "sidebar_aiTagAll": {
+    "message": "+ AI tag all ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiTaggingProgress": {
+    "message": "AI tagging $done$/$total$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_configureAIFirst": {
+    "message": "Please configure AI in Settings first"
+  },
+  "sidebar_noUntaggedBookmarks": {
+    "message": "No bookmarks need tagging"
+  },
+  "sidebar_aiTagResult": {
+    "message": "Tagged $count$ bookmark(s)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiTagResultPartial": {
+    "message": "Tagged $count$ bookmark(s) ($skipped$ got no AI suggestions)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_aiTagNoSuggestions": {
+    "message": "AI returned no tag suggestions — you can tag manually"
+  },
+  "sidebar_aiTagFailed": {
+    "message": "AI tagging failed: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiAnalyzing": {
+    "message": "AI analyzing…"
+  },
+  "sidebar_tagsOrganized": {
+    "message": "Tags organized"
+  },
+  "sidebar_organizeFailed": {
+    "message": "Organize failed: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupDialogTitle": {
+    "message": "AI cleanup suggestions"
+  },
+  "sidebar_cleanupDirectionHint": {
+    "message": "Not happy with the result? Tell AI what you want (optional)"
+  },
+  "sidebar_cleanupDirectionPlaceholder": {
+    "message": "e.g. keep CSS / be more aggressive / don't delete specific tech names"
+  },
+  "sidebar_cleanupReanalyze": {
+    "message": "Re-analyze"
+  },
+  "sidebar_cleanupExecute": {
+    "message": "Apply"
+  },
+  "sidebar_cleanupNoSuggestions": {
+    "message": "AI has no cleanup suggestions. Try entering a direction above and re-analyzing."
+  },
+  "sidebar_cleanupMergeSection": {
+    "message": "Merge ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupDeleteSection": {
+    "message": "Delete ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupAnalyzing": {
+    "message": "Analyzing…"
+  },
+  "sidebar_cleanupReanalyzing": {
+    "message": "AI is re-analyzing…"
+  },
+  "sidebar_cleanupReanalyzingWithDirection": {
+    "message": "AI is re-analyzing with your direction…"
+  },
+  "sidebar_cleanupReanalyzeFailed": {
+    "message": "Re-analysis failed: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_rename": {
+    "message": "Rename"
+  },
+  "sidebar_newTagName": {
+    "message": "New tag name"
+  },
+  "sidebar_renameFailed": {
+    "message": "Rename failed"
+  },
+  "sidebar_deleteFailed": {
+    "message": "Delete failed"
+  },
+  "search_placeholder": {
+    "message": "Search bookmarks or enter a URL..."
+  },
+  "header_bookmarkCount": {
+    "message": "$count$ bookmarks",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_pinsEmpty": {
+    "message": "Right-click any bookmark → Pin, and it will appear here"
+  },
+  "header_recentSearches": {
+    "message": "Recent searches"
+  },
+  "header_recentVisits": {
+    "message": "Recently visited"
+  },
+  "header_shortcut_nav": {
+    "message": "navigate"
+  },
+  "header_shortcut_open": {
+    "message": "open"
+  },
+  "header_shortcut_close": {
+    "message": "close"
+  },
+  "header_shortcut_clear": {
+    "message": "clear"
+  },
+  "header_urlDirect": {
+    "message": "Go to $url$",
+    "placeholders": {
+      "url": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_urlDirectHint": {
+    "message": "Press Enter to open"
+  },
+  "header_bookmarksMatched": {
+    "message": "Bookmarks · $count$ matches",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_noMatch": {
+    "message": "No bookmarks matching \"$query$\"",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_noMatchHint": {
+    "message": "Try Google search, or check your spelling"
+  },
+  "header_googleSearch": {
+    "message": "Search $query$ → Google",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "category_uncategorized": {
+    "message": "Uncategorized"
+  },
+  "tag_searchPlaceholder": {
+    "message": "Type or create a tag…"
+  },
+  "tag_aiAnalyzing": {
+    "message": "AI analyzing…"
+  },
+  "tag_noMatchCreate": {
+    "message": "No match — press Enter to create"
+  },
+  "tag_empty": {
+    "message": "No tags yet — type a name to create the first one"
+  },
+  "tag_createWithName": {
+    "message": "Create \"$name$\"",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "tag_aiSuggestion": {
+    "message": "AI suggestion"
+  },
+  "bk_count": {
+    "message": "$count$ bookmarks",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_countFrequent": {
+    "message": "$count$ pinned",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_countRecent": {
+    "message": "$count$ recently added",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_addTagTitle": {
+    "message": "Add tag"
+  },
+  "bk_filterByTag": {
+    "message": "Filter #$name$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_title": {
+    "message": "Settings"
+  },
+  "settings_section_ai": {
+    "message": "AI Classification"
+  },
+  "settings_section_appearance": {
+    "message": "Appearance"
+  },
+  "settings_section_search": {
+    "message": "Search"
+  },
+  "settings_section_data": {
+    "message": "Data Management"
+  },
+  "settings_provider_custom": {
+    "message": "Custom (OpenAI compatible)"
+  },
+  "settings_ai_disconnected": {
+    "message": "Not connected"
+  },
+  "settings_ai_connected": {
+    "message": "Connected"
+  },
+  "settings_ai_connect_failed": {
+    "message": "Connection failed"
+  },
+  "settings_ai_verify_error": {
+    "message": "Verification error"
+  },
+  "settings_ai_verify": {
+    "message": "Verify connection"
+  },
+  "settings_ai_verifying": {
+    "message": "Verifying..."
+  },
+  "settings_ai_apikey_placeholder": {
+    "message": "Paste your API key here..."
+  },
+  "settings_ai_auto_classify": {
+    "message": "Auto-classify new bookmarks"
+  },
+  "settings_ai_auto_classify_desc": {
+    "message": "Suggest a category automatically on bookmarking"
+  },
+  "settings_ai_auto_confirm": {
+    "message": "Auto-confirm high confidence"
+  },
+  "settings_ai_auto_confirm_desc": {
+    "message": "Auto-classify after 5s when confidence > 80%"
+  },
+  "settings_theme": {
+    "message": "Theme"
+  },
+  "settings_theme_system": {
+    "message": "Follow system"
+  },
+  "settings_theme_light": {
+    "message": "Light"
+  },
+  "settings_theme_dark": {
+    "message": "Dark"
+  },
+  "settings_accent_color": {
+    "message": "Accent color"
+  },
+  "settings_custom_color": {
+    "message": "Custom color"
+  },
+  "settings_color_violet": {
+    "message": "Violet"
+  },
+  "settings_color_cobalt": {
+    "message": "Cobalt"
+  },
+  "settings_color_emerald": {
+    "message": "Emerald"
+  },
+  "settings_color_amber": {
+    "message": "Amber"
+  },
+  "settings_color_rose": {
+    "message": "Rose"
+  },
+  "settings_compact_mode": {
+    "message": "Compact mode"
+  },
+  "settings_compact_mode_desc": {
+    "message": "Reduce row spacing to show more bookmarks"
+  },
+  "settings_default_engine": {
+    "message": "Default search engine"
+  },
+  "settings_auto_search": {
+    "message": "Focus search on open"
+  },
+  "settings_auto_search_desc": {
+    "message": "Auto-open the search panel on a new tab"
+  },
+  "settings_export_title": {
+    "message": "Export bookmarks"
+  },
+  "settings_export_desc": {
+    "message": "Export as JSON or HTML"
+  },
+  "settings_export_btn": {
+    "message": "Export"
+  },
+  "settings_import_title": {
+    "message": "Import bookmarks"
+  },
+  "settings_import_desc": {
+    "message": "Import from a file"
+  },
+  "settings_import_btn": {
+    "message": "Import"
+  },
+  "ai_drawer_title": {
+    "message": "AI Bookmark Organizer"
+  },
+  "ai_init_desc": {
+    "message": "AI will analyze your bookmarks' titles and URLs,<br>compare them with your current categories,<br>and produce an organization plan.<br><br>You can approve or reject each suggestion."
+  },
+  "ai_init_desc_with_count": {
+    "message": "AI will analyze the titles and URLs of your $count$ bookmarks,<br>compare them with your current categories,<br>and produce an organization plan.<br><br>You can approve or reject each suggestion.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_start_analysis": {
+    "message": "Start analysis"
+  },
+  "ai_analyzing": {
+    "message": "Analyzing..."
+  },
+  "ai_progress_label_1": {
+    "message": "Reading bookmark tree..."
+  },
+  "ai_progress_label_2": {
+    "message": "Analyzing titles and URLs..."
+  },
+  "ai_progress_label_3": {
+    "message": "Matching category rules..."
+  },
+  "ai_progress_label_4": {
+    "message": "Generating move suggestions..."
+  },
+  "ai_need_config_title": {
+    "message": "Please configure AI in Settings first"
+  },
+  "ai_need_config_desc": {
+    "message": "Go to Settings -> AI Classification and enter your API key,<br>then return here to start analysis."
+  },
+  "ai_go_settings": {
+    "message": "Go to Settings"
+  },
+  "ai_section_new_categories": {
+    "message": "Suggested new categories"
+  },
+  "ai_section_suggested_moves": {
+    "message": "Suggested moves"
+  },
+  "ai_contains_count": {
+    "message": "Contains $count$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_dismiss": {
+    "message": "Dismiss"
+  },
+  "ai_stat_total": {
+    "message": "Total"
+  },
+  "ai_stat_moves": {
+    "message": "Moves"
+  },
+  "ai_stat_new_cats": {
+    "message": "New categories"
+  },
+  "ai_footer_default": {
+    "message": "Analyze titles and URLs of all bookmarks"
+  },
+  "ai_close": {
+    "message": "Close"
+  },
+  "ai_selected_count": {
+    "message": "Selected $done$ / $total$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "ai_select_all": {
+    "message": "Select all"
+  },
+  "ai_clear_all": {
+    "message": "Clear"
+  },
+  "ai_execute": {
+    "message": "Apply changes"
+  },
+  "ai_done_title": {
+    "message": "Organization complete"
+  },
+  "ai_done_desc": {
+    "message": "Moved $moved$ bookmarks<br>Added $newcats$ categories",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "newcats": {
+        "content": "$2"
+      }
+    }
+  },
+  "ai_changes_applied": {
+    "message": "Changes applied"
+  },
+  "ai_done_btn": {
+    "message": "Done"
+  },
+  "ai_undo_countdown": {
+    "message": "Undo ($sec$s)",
+    "placeholders": {
+      "sec": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_confirmed": {
+    "message": "Confirmed"
+  },
+  "ai_undone_title": {
+    "message": "Reverted"
+  },
+  "ai_undone_desc": {
+    "message": "All bookmarks are back in place"
+  },
+  "ai_changes_reverted": {
+    "message": "Changes reverted"
+  },
+  "toast_ai_badge": {
+    "message": "AI Classify"
+  },
+  "toast_best_match_found": {
+    "message": "Found the best category for you"
+  },
+  "toast_confirm": {
+    "message": "Confirm"
+  },
+  "toast_choose_other": {
+    "message": "Choose other"
+  },
+  "toast_no_categories": {
+    "message": "No categories yet"
+  },
+  "toast_load_categories_failed": {
+    "message": "Failed to load categories"
+  },
+  "toast_auto_confirm_countdown": {
+    "message": "Auto-confirm in $sec$s",
+    "placeholders": {
+      "sec": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_title": {
+    "message": "MarkPage"
+  },
+  "newtab_title": {
+    "message": "New Tab — MarkPage"
+  },
+  "popup_loading": {
+    "message": "Loading..."
+  },
+  "popup_errorNoTab": {
+    "message": "Unable to fetch current page info"
+  },
+  "popup_errorInitFailed": {
+    "message": "Initialization failed, please retry"
+  },
+  "popup_aiBadge": {
+    "message": "AI"
+  },
+  "popup_aiAnalyzing": {
+    "message": "Analyzing the best category..."
+  },
+  "popup_statusSaved": {
+    "message": "Saved"
+  },
+  "popup_aiUnavailable": {
+    "message": "AI analysis is unavailable, please pick a category manually"
+  },
+  "popup_btnSave": {
+    "message": "Save"
+  },
+  "popup_labelSaveTo": {
+    "message": "Save to:"
+  },
+  "popup_aiCategoryBadge": {
+    "message": "AI Category"
+  },
+  "popup_aiFoundBestCategory": {
+    "message": "Found the best category for you"
+  },
+  "popup_createNewCategory": {
+    "message": "Create \"$1\""
+  },
+  "popup_confirmWithPercent": {
+    "message": "Confirm category ($1%)"
+  },
+  "popup_confirm": {
+    "message": "Confirm category"
+  },
+  "popup_confirmWithPct": {
+    "message": "Confirm category ($1)"
+  },
+  "popup_selectOther": {
+    "message": "Choose other"
+  },
+  "popup_aiSuggestion": {
+    "message": "AI suggestion"
+  },
+  "popup_alternatives": {
+    "message": "Alternatives:"
+  },
+  "popup_suggestNewCategory": {
+    "message": "Suggested new category:"
+  },
+  "popup_analyzing": {
+    "message": "Analyzing..."
+  },
+  "popup_classifyRetry": {
+    "message": "Classify failed, retry"
+  },
+  "popup_savedToCategory": {
+    "message": "Saved to \"$1\""
+  },
+  "popup_saveFailed": {
+    "message": "Save failed: $1"
+  },
+  "popup_unknownError": {
+    "message": "Unknown error"
+  },
+  "popup_chooseCategory": {
+    "message": "Choose category"
+  },
+  "popup_newCategoryPlaceholder": {
+    "message": "Or create a new category..."
+  },
+  "popup_createBtn": {
+    "message": "Create"
+  },
+  "popup_back": {
+    "message": "Back"
+  },
+  "bg_notifyTitle": {
+    "message": "MarkPage category suggestion"
+  },
+  "bg_notifyMessage": {
+    "message": "\"$1\" → $2 ($3%)"
+  }
+}

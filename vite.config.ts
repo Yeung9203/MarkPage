@@ -24,6 +24,20 @@ function copyExtensionFiles(): Plugin {
           copyFileSync(resolve(iconsDir, f), resolve(distIcons, f));
         });
       }
+
+      // 复制 _locales（多语种文案）
+      const localesDir = resolve(__dirname, 'public/_locales');
+      const distLocales = resolve(__dirname, 'dist/_locales');
+      if (existsSync(localesDir)) {
+        if (!existsSync(distLocales)) mkdirSync(distLocales, { recursive: true });
+        readdirSync(localesDir).forEach((locale) => {
+          const src = resolve(localesDir, locale, 'messages.json');
+          if (!existsSync(src)) return;
+          const dst = resolve(distLocales, locale);
+          if (!existsSync(dst)) mkdirSync(dst, { recursive: true });
+          copyFileSync(src, resolve(dst, 'messages.json'));
+        });
+      }
     },
   };
 }

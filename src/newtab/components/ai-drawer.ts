@@ -15,6 +15,7 @@
 
 import { h, on } from '@/utils/dom';
 import { iconAI, iconClose, iconPlay } from './icons';
+import { t } from '@/utils/i18n';
 import { batchClassify } from '@/services/ai';
 import { getAllBookmarks, extractCategories, moveBookmark, createFolder, getBookmarkTree } from '@/services/bookmarks';
 import { getSettings } from '@/services/storage';
@@ -91,7 +92,7 @@ export function renderAIDrawer(): HTMLElement {
   headerIcon.innerHTML = iconAI(15);
   header.appendChild(headerIcon);
 
-  header.appendChild(h('span', { style: 'font-size:14px;font-weight:600;flex:1' }, 'AI 整理书签'));
+  header.appendChild(h('span', { style: 'font-size:14px;font-weight:600;flex:1' }, t('ai_drawer_title')));
 
   const closeBtn = h('button', {
     style: 'width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:6px;cursor:pointer;color:var(--text-3);transition:all var(--fast)',
@@ -114,13 +115,11 @@ export function renderAIDrawer(): HTMLElement {
     <div style="text-align:center;padding:32px 0">
       <div style="font-size:28px;margin-bottom:14px;opacity:0.15">\uD83E\uDD16</div>
       <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;line-height:1.6" id="aioInitDesc">
-        AI 将分析你的书签的标题和 URL，<br>
-        与当前分类结构对比后生成整理方案。<br><br>
-        你可以逐条确认或拒绝每个建议。
+        ${t('ai_init_desc')}
       </div>
       <button id="aioStartBtn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;font-family:var(--font);font-size:13px;font-weight:500;color:white;background:var(--accent);border:none;border-radius:8px;cursor:pointer;transition:all var(--fast)">
         ${iconPlay(16)}
-        开始分析
+        ${t('ai_start_analysis')}
       </button>
     </div>
   `;
@@ -134,7 +133,7 @@ export function renderAIDrawer(): HTMLElement {
         <div id="aioProgressFill" style="height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s var(--ease);width:0%"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3)">
-        <span id="aioProgressLabel">正在分析...</span>
+        <span id="aioProgressLabel">${t('ai_analyzing')}</span>
         <span id="aioProgressPct">0/0</span>
       </div>
     </div>
@@ -147,10 +146,9 @@ export function renderAIDrawer(): HTMLElement {
   doneView.innerHTML = `
     <div style="text-align:center;padding:28px 0">
       <div style="font-size:36px;margin-bottom:12px">\u2705</div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">整理完成</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">${t('ai_done_title')}</div>
       <div id="aioDoneDesc" style="font-size:12px;color:var(--text-3);line-height:1.6">
-        已移动 <strong style="color:var(--accent)">0</strong> 个书签<br>
-        新增 <strong style="color:var(--green)">0</strong> 个分类
+        ${t('ai_done_desc', ['0', '0'])}
       </div>
     </div>
   `;
@@ -164,8 +162,8 @@ export function renderAIDrawer(): HTMLElement {
     style: 'display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--border);flex-shrink:0',
   });
   footer.innerHTML = `
-    <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">分析所有书签的标题和 URL</div>
-    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)" onclick="document.getElementById('aioDrawer')?.classList.remove('open')">关闭</button>
+    <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">${t('ai_footer_default')}</div>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)" onclick="document.getElementById('aioDrawer')?.classList.remove('open')">${t('ai_close')}</button>
   `;
   drawerEl.appendChild(footer);
 
@@ -216,15 +214,14 @@ async function startAnalysis(): Promise<void> {
     const desc = document.getElementById('aioInitDesc');
     if (desc) {
       desc.innerHTML = `
-        <div style="color:var(--accent);font-weight:500;margin-bottom:8px">请先在设置中配置 AI 服务</div>
-        请前往「设置 → AI 智能分类」填写 API Key，<br>
-        然后回到此处开始分析。
+        <div style="color:var(--accent);font-weight:500;margin-bottom:8px">${t('ai_need_config_title')}</div>
+        ${t('ai_need_config_desc')}
       `;
     }
     // 将按钮文字改为跳转设置的提示
     const startBtn = document.getElementById('aioStartBtn');
     if (startBtn) {
-      startBtn.textContent = '前往设置';
+      startBtn.textContent = t('ai_go_settings');
       const newBtn = startBtn.cloneNode(true) as HTMLElement;
       startBtn.parentNode?.replaceChild(newBtn, startBtn);
       on(newBtn, 'click', () => {
@@ -287,7 +284,7 @@ async function startRealAnalysis(stream: HTMLElement | null, settings: Awaited<R
         if (fill) fill.style.width = pct + '%';
         if (pctEl) pctEl.textContent = `${done}/${totalCount}`;
 
-        const labels = ['读取书签结构...', '分析标题和 URL...', '匹配分类规则...', '生成移动建议...'];
+        const labels = [t('ai_progress_label_1'), t('ai_progress_label_2'), t('ai_progress_label_3'), t('ai_progress_label_4')];
         if (progressLabel) progressLabel.textContent = labels[Math.min(Math.floor(pct / 28), labels.length - 1)];
       },
     );
@@ -326,7 +323,7 @@ async function startRealAnalysis(stream: HTMLElement | null, settings: Awaited<R
     // 渲染新分类建议
     if (newCategories.size > 0 && stream) {
       stream.innerHTML += `
-        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">建议新增分类</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">${t('ai_section_new_categories')}</div>
       `;
       newCategories.forEach(catName => {
         const count = analysisChanges.filter(c => c.to === catName).length;
@@ -334,8 +331,8 @@ async function startRealAnalysis(stream: HTMLElement | null, settings: Awaited<R
           <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--accent-soft);border:1px solid color-mix(in srgb, var(--accent) 25%, transparent);border-radius:7px;margin-bottom:4px;font-size:12px">
             <span style="color:var(--accent);font-size:12px;flex-shrink:0">\u2726</span>
             <span style="font-weight:600;color:var(--accent)">${catName}</span>
-            <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">归入 ${count} 个</span>
-            <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="不需要">\u2715</button>
+            <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">${t('ai_contains_count', [String(count)])}</span>
+            <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="${t('ai_dismiss')}">\u2715</button>
           </div>
         `;
       });
@@ -350,7 +347,7 @@ async function startRealAnalysis(stream: HTMLElement | null, settings: Awaited<R
     // 渲染变更行
     if (analysisChanges.length > 0 && stream) {
       stream.innerHTML += `
-        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">建议移动</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">${t('ai_section_suggested_moves')}</div>
       `;
       analysisChanges.forEach(change => {
         appendChangeRow(stream, change);
@@ -393,29 +390,29 @@ function startMockAnalysis(stream: HTMLElement | null): void {
     if (fill) fill.style.width = pct + '%';
     if (pctLabel) pctLabel.textContent = analyzed + '/' + total;
 
-    const labels = ['读取书签结构...', '分析标题和 URL...', '匹配分类规则...', '生成移动建议...'];
+    const labels = [t('ai_progress_label_1'), t('ai_progress_label_2'), t('ai_progress_label_3'), t('ai_progress_label_4')];
     if (progressLabel) progressLabel.textContent = labels[Math.min(Math.floor(pct / 28), labels.length - 1)];
 
     // 流式渲染：追加新增分类建议
     if (!newCatsAdded && analyzed > 15 && stream) {
       newCatsAdded = true;
       stream.innerHTML += `
-        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">建议新增分类</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">${t('ai_section_new_categories')}</div>
         <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--accent-soft);border:1px solid color-mix(in srgb, var(--accent) 25%, transparent);border-radius:7px;margin-bottom:4px;font-size:12px">
           <span style="color:var(--accent);font-size:12px;flex-shrink:0">\u2726</span>
           <span style="font-weight:600;color:var(--accent)">学习资源</span>
           <span style="color:var(--text-3);font-size:11px">教程、文档</span>
-          <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">归入 4 个</span>
-          <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="不需要">\u2715</button>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">${t('ai_contains_count', ['4'])}</span>
+          <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="${t('ai_dismiss')}">\u2715</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--accent-soft);border:1px solid color-mix(in srgb, var(--accent) 25%, transparent);border-radius:7px;margin-bottom:4px;font-size:12px">
           <span style="color:var(--accent);font-size:12px;flex-shrink:0">\u2726</span>
           <span style="font-weight:600;color:var(--accent)">生产力工具</span>
           <span style="color:var(--text-3);font-size:11px">协作、管理</span>
-          <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">归入 3 个</span>
-          <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="不需要">\u2715</button>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-3);white-space:nowrap">${t('ai_contains_count', ['3'])}</span>
+          <button class="aio-dismiss-btn" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:4px;cursor:pointer;color:var(--text-4);font-size:14px;flex-shrink:0" title="${t('ai_dismiss')}">\u2715</button>
         </div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">建议移动</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 6px;display:flex;align-items:center;gap:6px">${t('ai_section_suggested_moves')}</div>
       `;
 
       // 绑定关闭按钮
@@ -525,15 +522,15 @@ function finishAnalysis(stream: HTMLElement | null, total: number, newCatCount: 
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
         <div style="padding:10px 8px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;text-align:center">
           <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums">${total}</div>
-          <div style="font-size:10px;color:var(--text-4);margin-top:2px">总书签</div>
+          <div style="font-size:10px;color:var(--text-4);margin-top:2px">${t('ai_stat_total')}</div>
         </div>
         <div style="padding:10px 8px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;text-align:center">
           <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--accent)">${analysisChanges.length}</div>
-          <div style="font-size:10px;color:var(--text-4);margin-top:2px">建议移动</div>
+          <div style="font-size:10px;color:var(--text-4);margin-top:2px">${t('ai_stat_moves')}</div>
         </div>
         <div style="padding:10px 8px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;text-align:center">
           <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--green)">${newCatCount}</div>
-          <div style="font-size:10px;color:var(--text-4);margin-top:2px">新增分类</div>
+          <div style="font-size:10px;color:var(--text-4);margin-top:2px">${t('ai_stat_new_cats')}</div>
         </div>
       </div>
     `;
@@ -554,7 +551,7 @@ function updateFooterInfo(): void {
   const checked = document.querySelectorAll('#aioStreamResults .aio-change-toggle.checked').length;
   const total = document.querySelectorAll('#aioStreamResults .aio-change-toggle').length;
   const info = document.getElementById('aioFooterInfo');
-  if (info) info.textContent = `已选 ${checked}/${total} 项`;
+  if (info) info.textContent = t('ai_selected_count', [String(checked), String(total)]);
 }
 
 /**
@@ -568,10 +565,10 @@ function updateFooterWithActions(): void {
   const total = document.querySelectorAll('#aioStreamResults .aio-change-toggle').length;
 
   footer.innerHTML = `
-    <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">已选 ${checked}/${total} 项</div>
-    <button id="aioSelectAll" style="color:var(--text-3);background:none;padding:6px 8px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer">全选</button>
-    <button id="aioClearAll" style="color:var(--text-3);background:none;padding:6px 8px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer">清空</button>
-    <button id="aioExecute" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:white;background:var(--accent)">执行整理</button>
+    <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">${t('ai_selected_count', [String(checked), String(total)])}</div>
+    <button id="aioSelectAll" style="color:var(--text-3);background:none;padding:6px 8px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer">${t('ai_select_all')}</button>
+    <button id="aioClearAll" style="color:var(--text-3);background:none;padding:6px 8px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer">${t('ai_clear_all')}</button>
+    <button id="aioExecute" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:white;background:var(--accent)">${t('ai_execute')}</button>
   `;
 
   // 绑定事件
@@ -681,16 +678,19 @@ async function executeOrganize(): Promise<void> {
   if (analyzingView) analyzingView.style.display = 'none';
   if (doneView) doneView.style.display = '';
   if (doneDesc) {
-    doneDesc.innerHTML = `已移动 <strong style="color:var(--accent)">${movedCount}</strong> 个书签<br>新增 <strong style="color:var(--green)">${newFolderCount}</strong> 个分类`;
+    doneDesc.innerHTML = t('ai_done_desc', [
+      `<strong style="color:var(--accent)">${movedCount}</strong>`,
+      `<strong style="color:var(--green)">${newFolderCount}</strong>`,
+    ]);
   }
 
   // 底栏变为撤销
   const footer = document.getElementById('aioFooter');
   if (footer) {
     footer.innerHTML = `
-      <div style="flex:1;font-size:11px;color:var(--text-3)">变更已应用</div>
-      <button id="aioDoneBtn" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">完成</button>
-      <button id="aioUndoBtn" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:white;background:var(--accent)">撤销（30s）</button>
+      <div style="flex:1;font-size:11px;color:var(--text-3)">${t('ai_changes_applied')}</div>
+      <button id="aioDoneBtn" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">${t('ai_done_btn')}</button>
+      <button id="aioUndoBtn" style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:white;background:var(--accent)">${t('ai_undo_countdown', ['30'])}</button>
     `;
 
     const doneBtn = document.getElementById('aioDoneBtn');
@@ -705,7 +705,7 @@ async function executeOrganize(): Promise<void> {
   aioTimer = setInterval(() => {
     sec--;
     const btn = document.getElementById('aioUndoBtn');
-    if (btn) btn.textContent = `撤销（${sec}s）`;
+    if (btn) btn.textContent = t('ai_undo_countdown', [String(sec)]);
     if (sec <= 0) {
       if (aioTimer) clearInterval(aioTimer);
       aioTimer = null;
@@ -713,7 +713,7 @@ async function executeOrganize(): Promise<void> {
         btn.setAttribute('disabled', '');
         btn.style.opacity = '0.4';
         btn.style.cursor = 'not-allowed';
-        btn.textContent = '已确认';
+        btn.textContent = t('ai_confirmed');
       }
     }
   }, 1000);
@@ -733,14 +733,14 @@ function undoOrganize(): void {
   const doneDesc = document.getElementById('aioDoneDesc');
 
   if (doneIcon) doneIcon.textContent = '\u21A9';
-  if (doneTitle) doneTitle.textContent = '已撤销';
-  if (doneDesc) doneDesc.textContent = '所有书签已恢复原位';
+  if (doneTitle) doneTitle.textContent = t('ai_undone_title');
+  if (doneDesc) doneDesc.textContent = t('ai_undone_desc');
 
   const footer = document.getElementById('aioFooter');
   if (footer) {
     footer.innerHTML = `
-      <div style="flex:1;font-size:11px;color:var(--text-3)">变更已撤销</div>
-      <button style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">关闭</button>
+      <div style="flex:1;font-size:11px;color:var(--text-3)">${t('ai_changes_reverted')}</div>
+      <button style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">${t('ai_close')}</button>
     `;
     const closeBtn = footer.querySelector('button');
     if (closeBtn) on(closeBtn, 'click', closeAIDrawer);
@@ -804,13 +804,13 @@ export function openAIDrawer(): void {
   analysisChanges = [];
 
   const footerInfo = document.getElementById('aioFooterInfo');
-  if (footerInfo) footerInfo.textContent = '分析所有书签的标题和 URL';
+  if (footerInfo) footerInfo.textContent = t('ai_footer_default');
 
   const footer = document.getElementById('aioFooter');
   if (footer) {
     footer.innerHTML = `
-      <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">分析所有书签的标题和 URL</div>
-      <button style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">关闭</button>
+      <div class="aio-footer-info" id="aioFooterInfo" style="flex:1;font-size:11px;color:var(--text-3)">${t('ai_footer_default')}</div>
+      <button style="padding:6px 14px;font-family:var(--font);font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;color:var(--text-2);background:var(--bg-3)">${t('ai_close')}</button>
     `;
     const closeBtn = footer.querySelector('button');
     if (closeBtn) on(closeBtn, 'click', closeAIDrawer);
@@ -842,11 +842,7 @@ async function updateInitDescription(): Promise<void> {
     const bookmarks = await getAllBookmarks();
     const desc = document.getElementById('aioInitDesc');
     if (desc) {
-      desc.innerHTML = `
-        AI 将分析你的 <strong>${bookmarks.length} 个书签</strong> 的标题和 URL，<br>
-        与当前分类结构对比后生成整理方案。<br><br>
-        你可以逐条确认或拒绝每个建议。
-      `;
+      desc.innerHTML = t('ai_init_desc_with_count', [`<strong>${bookmarks.length}</strong>`]);
     }
   } catch {
     // 忽略错误，保持默认文本

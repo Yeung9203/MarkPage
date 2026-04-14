@@ -19,14 +19,15 @@ import { getSettings, updateSettings } from '@/services/storage';
 import { validateConfig } from '@/services/ai';
 import { getAllBookmarks, getBookmarkTree, createBookmark, createFolder } from '@/services/bookmarks';
 import type { AIProvider, SearchEngine, ThemeMode } from '@/types';
+import { t } from '@/utils/i18n';
 
 /** 预设主题色 */
 const PRESET_COLORS = [
-  { color: '#8b5cf6', name: '紫罗兰' },
-  { color: '#3b82f6', name: '钴蓝' },
-  { color: '#10b981', name: '翠绿' },
-  { color: '#f59e0b', name: '琥珀' },
-  { color: '#ec4899', name: '玫红' },
+  { color: '#8b5cf6', nameKey: 'settings_color_violet' },
+  { color: '#3b82f6', nameKey: 'settings_color_cobalt' },
+  { color: '#10b981', nameKey: 'settings_color_emerald' },
+  { color: '#f59e0b', nameKey: 'settings_color_amber' },
+  { color: '#ec4899', nameKey: 'settings_color_rose' },
 ];
 
 /** AI 服务商配置映射 */
@@ -34,7 +35,7 @@ const PROVIDER_OPTIONS: { label: string; provider: AIProvider; model: string }[]
   { label: 'OpenAI (gpt-4o-mini)', provider: 'openai', model: 'gpt-4o-mini' },
   { label: 'Anthropic (claude-haiku)', provider: 'anthropic', model: 'claude-3-haiku-20240307' },
   { label: 'DeepSeek (deepseek-chat)', provider: 'deepseek', model: 'deepseek-chat' },
-  { label: '自定义 (OpenAI 兼容)', provider: 'custom', model: '' },
+  { label: t('settings_provider_custom'), provider: 'custom', model: '' },
 ];
 
 /** 抽屉元素引用 */
@@ -58,7 +59,7 @@ export function renderSettingsDrawer(): HTMLElement {
   const header = h('div', {
     style: 'display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0',
   });
-  header.appendChild(h('span', { style: 'font-size:14px;font-weight:600' }, '设置'));
+  header.appendChild(h('span', { style: 'font-size:14px;font-weight:600' }, t('settings_title')));
   const closeBtn = h('button', {
     style: 'width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:6px;cursor:pointer;color:var(--text-3);transition:all var(--fast)',
   });
@@ -73,7 +74,7 @@ export function renderSettingsDrawer(): HTMLElement {
   });
 
   // ---- AI 智能分类 ----
-  body.appendChild(createSectionTitle('AI 智能分类'));
+  body.appendChild(createSectionTitle(t('settings_section_ai')));
 
   const aiCard = h('div', {
     style: 'padding:12px;background:var(--bg-0);border:1px solid var(--border);border-radius:8px;margin-bottom:12px',
@@ -83,7 +84,7 @@ export function renderSettingsDrawer(): HTMLElement {
   const aiStatus = h('div', {
     style: 'display:flex;align-items:center;gap:8px;margin-bottom:10px',
   });
-  aiStatus.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:var(--text-4)" id="sdAiDot"></span><span style="font-size:12px;font-weight:500" id="sdAiLabel">未连接</span>';
+  aiStatus.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:var(--text-4)" id="sdAiDot"></span><span style="font-size:12px;font-weight:500" id="sdAiLabel">${t('settings_ai_disconnected')}</span>`;
   aiCard.appendChild(aiStatus);
 
   // 服务商选择
@@ -114,7 +115,7 @@ export function renderSettingsDrawer(): HTMLElement {
   apiKeyInput.className = 'setting-input';
   apiKeyInput.id = 'sdApiKeyInput';
   apiKeyInput.type = 'text';
-  apiKeyInput.placeholder = '粘贴你的密钥到这里...';
+  apiKeyInput.placeholder = t('settings_ai_apikey_placeholder');
   apiKeyInput.style.cssText = 'width:100%;padding:8px 10px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-2);border:1px solid var(--border);border-radius:6px;outline:none';
   // 保存 API Key（失焦时保存）
   on(apiKeyInput, 'blur', () => {
@@ -129,14 +130,14 @@ export function renderSettingsDrawer(): HTMLElement {
     class: 'btn btn-primary',
     id: 'sdVerifyBtn',
     style: 'width:100%;padding:7px;font-size:12px;font-weight:500;border:none;border-radius:6px;cursor:pointer;margin-top:8px;color:white;background:var(--accent)',
-  }, '验证连接');
+  }, t('settings_ai_verify'));
   on(verifyBtn, 'click', async () => {
     const dot = document.getElementById('sdAiDot');
     const label = document.getElementById('sdAiLabel');
     const btn = verifyBtn;
 
     // 显示验证中状态
-    btn.textContent = '验证中...';
+    btn.textContent = t('settings_ai_verifying');
     btn.setAttribute('disabled', '');
 
     try {
@@ -146,52 +147,52 @@ export function renderSettingsDrawer(): HTMLElement {
       if (dot && label) {
         if (isValid) {
           dot.style.background = 'var(--green)';
-          label.textContent = '已连接';
+          label.textContent = t('settings_ai_connected');
           // 更新启用状态
           await updateSettings({ ai: { enabled: true } as any });
         } else {
           dot.style.background = 'var(--red, #ef4444)';
-          label.textContent = '连接失败';
+          label.textContent = t('settings_ai_connect_failed');
         }
       }
     } catch (error) {
       console.error('[MarkPage] 验证连接失败:', error);
       if (dot && label) {
         dot.style.background = 'var(--red, #ef4444)';
-        label.textContent = '验证出错';
+        label.textContent = t('settings_ai_verify_error');
       }
     }
 
-    btn.textContent = '验证连接';
+    btn.textContent = t('settings_ai_verify');
     btn.removeAttribute('disabled');
   });
   aiCard.appendChild(verifyBtn);
   body.appendChild(aiCard);
 
   // AI 开关行
-  body.appendChild(createToggleRow('自动分类新书签', '收藏时自动推荐分类', true, 'sdToggleAutoClassify', (isOn) => {
+  body.appendChild(createToggleRow(t('settings_ai_auto_classify'), t('settings_ai_auto_classify_desc'), true, 'sdToggleAutoClassify', (isOn) => {
     updateSettings({ ai: { enabled: isOn } as any });
   }));
-  body.appendChild(createToggleRow('高置信度自动确认', '置信度 > 80% 时 5 秒后自动归类', true, 'sdToggleAutoConfirm', (isOn) => {
+  body.appendChild(createToggleRow(t('settings_ai_auto_confirm'), t('settings_ai_auto_confirm_desc'), true, 'sdToggleAutoConfirm', (isOn) => {
     updateSettings({ ai: { autoConfirm: isOn } as any });
   }));
 
   // ---- 外观 ----
-  body.appendChild(createSectionTitle('外观'));
+  body.appendChild(createSectionTitle(t('settings_section_appearance')));
 
   // 主题选择
   const themeRow = h('div', {
     style: 'display:flex;align-items:center;justify-content:space-between;padding:10px 0',
   });
-  themeRow.appendChild(h('div', {}, [h('span', { style: 'font-size:13px;font-weight:450' }, '主题')]));
+  themeRow.appendChild(h('div', {}, [h('span', { style: 'font-size:13px;font-weight:450' }, t('settings_theme'))]));
   const themeSelect = document.createElement('select');
   themeSelect.className = 'setting-select';
   themeSelect.id = 'sdThemeSelect';
   themeSelect.style.cssText = 'padding:5px 10px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-2);border:1px solid var(--border);border-radius:6px;cursor:pointer';
   [
-    { value: 'system', label: '跟随系统' },
-    { value: 'light', label: '亮色' },
-    { value: 'dark', label: '暗色' },
+    { value: 'system', label: t('settings_theme_system') },
+    { value: 'light', label: t('settings_theme_light') },
+    { value: 'dark', label: t('settings_theme_dark') },
   ].forEach(opt => {
     const option = document.createElement('option');
     option.value = opt.value;
@@ -219,7 +220,7 @@ export function renderSettingsDrawer(): HTMLElement {
   const colorSection = h('div', {
     style: 'padding:10px 0;border-top:1px solid var(--border)',
   });
-  colorSection.appendChild(h('div', { style: 'font-size:13px;font-weight:450;margin-bottom:8px' }, '主题色'));
+  colorSection.appendChild(h('div', { style: 'font-size:13px;font-weight:450;margin-bottom:8px' }, t('settings_accent_color')));
 
   const colorRow = h('div', {
     id: 'colorPickerRow',
@@ -237,7 +238,7 @@ export function renderSettingsDrawer(): HTMLElement {
     const swatch = h('div', {
       class: `color-swatch${preset.color === currentAccent ? ' active' : ''}`,
       style: `width:22px;height:22px;border-radius:50%;background:${preset.color};border:2px solid ${preset.color === currentAccent ? 'var(--text-1)' : 'transparent'};cursor:pointer;position:relative;transition:transform var(--fast) var(--ease),border-color var(--fast);flex-shrink:0`,
-      title: preset.name,
+      title: t(preset.nameKey),
     });
     on(swatch, 'click', () => setAccent(preset.color, swatch));
     colorRow.appendChild(swatch);
@@ -246,7 +247,7 @@ export function renderSettingsDrawer(): HTMLElement {
   // 自定义拾色器
   const customBtn = h('div', {
     style: 'width:22px;height:22px;border-radius:50%;border:1.5px dashed var(--border-strong);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-4);font-size:14px;font-weight:300;transition:all var(--fast);position:relative;overflow:hidden',
-    title: '自定义颜色',
+    title: t('settings_custom_color'),
   }, '+');
   const colorInput = document.createElement('input');
   colorInput.type = 'color';
@@ -260,7 +261,7 @@ export function renderSettingsDrawer(): HTMLElement {
   body.appendChild(colorSection);
 
   // 紧凑模式
-  body.appendChild(createToggleRow('紧凑模式', '减小行间距，显示更多书签', false, 'sdToggleCompact', (isOn) => {
+  body.appendChild(createToggleRow(t('settings_compact_mode'), t('settings_compact_mode_desc'), false, 'sdToggleCompact', (isOn) => {
     updateSettings({ compactMode: isOn });
     const padding = isOn ? '4px 24px' : '7px 24px';
     document.querySelectorAll('.bk-row').forEach(r => {
@@ -269,12 +270,12 @@ export function renderSettingsDrawer(): HTMLElement {
   }));
 
   // ---- 搜索 ----
-  body.appendChild(createSectionTitle('搜索'));
+  body.appendChild(createSectionTitle(t('settings_section_search')));
 
   const engineRow = h('div', {
     style: 'display:flex;align-items:center;justify-content:space-between;padding:10px 0',
   });
-  engineRow.appendChild(h('div', {}, [h('span', { style: 'font-size:13px;font-weight:450' }, '默认搜索引擎')]));
+  engineRow.appendChild(h('div', {}, [h('span', { style: 'font-size:13px;font-weight:450' }, t('settings_default_engine'))]));
   const engineSelect = document.createElement('select');
   engineSelect.className = 'setting-select';
   engineSelect.id = 'sdEngineSelect';
@@ -297,15 +298,15 @@ export function renderSettingsDrawer(): HTMLElement {
   engineRow.appendChild(engineSelect);
   body.appendChild(engineRow);
 
-  body.appendChild(createToggleRow('打开即搜索', '新标签页打开时自动弹出搜索面板', false, 'sdToggleAutoSearch', (isOn) => {
+  body.appendChild(createToggleRow(t('settings_auto_search'), t('settings_auto_search_desc'), false, 'sdToggleAutoSearch', (isOn) => {
     updateSettings({ autoFocusSearch: isOn });
   }));
 
   // ---- 数据管理 ----
-  body.appendChild(createSectionTitle('数据管理'));
+  body.appendChild(createSectionTitle(t('settings_section_data')));
 
-  body.appendChild(createActionRow('导出书签', '导出为 JSON 或 HTML', '导出', handleExport));
-  body.appendChild(createActionRow('导入书签', '从文件导入', '导入', handleImport));
+  body.appendChild(createActionRow(t('settings_export_title'), t('settings_export_desc'), t('settings_export_btn'), handleExport));
+  body.appendChild(createActionRow(t('settings_import_title'), t('settings_import_desc'), t('settings_import_btn'), handleImport));
 
   drawerEl.appendChild(body);
 
@@ -609,10 +610,10 @@ export async function openSettings(): Promise<void> {
     if (dot && label) {
       if (settings.ai.enabled && settings.ai.apiKey) {
         dot.style.background = 'var(--green)';
-        label.textContent = '已连接';
+        label.textContent = t('settings_ai_connected');
       } else {
         dot.style.background = 'var(--text-4)';
-        label.textContent = '未连接';
+        label.textContent = t('settings_ai_disconnected');
       }
     }
 

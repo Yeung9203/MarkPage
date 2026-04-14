@@ -1,0 +1,825 @@
+{
+  "extName": {
+    "message": "MarkPage"
+  },
+  "extDesc": {
+    "message": "智能书签管理 — AI 自动分类、高效搜索、美观新标签页"
+  },
+  "common_save": {
+    "message": "保存"
+  },
+  "common_cancel": {
+    "message": "取消"
+  },
+  "common_delete": {
+    "message": "删除"
+  },
+  "common_bookmarkCount": {
+    "message": "$count$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ctx_copyLink": {
+    "message": "复制链接"
+  },
+  "ctx_editBookmark": {
+    "message": "编辑书签"
+  },
+  "ctx_editTags": {
+    "message": "编辑标签"
+  },
+  "ctx_moveTo": {
+    "message": "移动到..."
+  },
+  "ctx_pinFrequent": {
+    "message": "设为常用"
+  },
+  "ctx_unpinFrequent": {
+    "message": "取消常用"
+  },
+  "ctx_delete": {
+    "message": "删除"
+  },
+  "ctx_editPlaceholderTitle": {
+    "message": "标题"
+  },
+  "ctx_moveToTitle": {
+    "message": "移动到"
+  },
+  "ctx_noCategories": {
+    "message": "暂无可用分类"
+  },
+  "ctx_loadCategoriesFailed": {
+    "message": "加载分类失败"
+  },
+  "sidebar_allBookmarks": {
+    "message": "全部书签"
+  },
+  "sidebar_frequent": {
+    "message": "常用"
+  },
+  "sidebar_recent": {
+    "message": "最近添加"
+  },
+  "sidebar_categoriesLabel": {
+    "message": "分类"
+  },
+  "sidebar_tagsLabel": {
+    "message": "标签"
+  },
+  "sidebar_settings": {
+    "message": "设置"
+  },
+  "sidebar_organizeBookmarks": {
+    "message": "整理书签"
+  },
+  "sidebar_organizeTags": {
+    "message": "整理标签"
+  },
+  "sidebar_addTopFolderTitle": {
+    "message": "新增一级文件夹"
+  },
+  "sidebar_addSubFolderTitle": {
+    "message": "新增子文件夹"
+  },
+  "sidebar_deleteFolderTitle": {
+    "message": "删除文件夹"
+  },
+  "sidebar_newFolderName": {
+    "message": "新文件夹"
+  },
+  "sidebar_createFolderFailed": {
+    "message": "创建失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_deleteFolderFailed": {
+    "message": "删除失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_renameFolderFailed": {
+    "message": "重命名失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_confirmDeleteFolder": {
+    "message": "确定删除文件夹 \"$name$\"？",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_confirmDeleteFolderWithItems": {
+    "message": "删除文件夹 \"$name$\" 会连同其中 $count$ 个书签一并删除，确定？",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_iconPickerSearchPlaceholder": {
+    "message": "搜索图标..."
+  },
+  "sidebar_iconPickerRecommended": {
+    "message": "为「$name$」推荐",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_iconPickerPopular": {
+    "message": "热门"
+  },
+  "sidebar_iconPickerNoResults": {
+    "message": "未找到匹配的图标"
+  },
+  "sidebar_iconPickerSearchResults": {
+    "message": "搜索结果 · $count$ 个",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_tagsEmpty": {
+    "message": "还没有标签 — 试试 AI 自动打标"
+  },
+  "sidebar_tagRenameHint": {
+    "message": "双击重命名"
+  },
+  "sidebar_tagDeleteTitle": {
+    "message": "删除标签"
+  },
+  "sidebar_tagConfirmDelete": {
+    "message": "确定删除标签 \"$name$\"？此操作不可撤销。",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_expandAll": {
+    "message": "展开全部 ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_collapse": {
+    "message": "收起"
+  },
+  "sidebar_aiTagAll": {
+    "message": "+ AI 补标全部 ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiTaggingProgress": {
+    "message": "AI 补标中 $done$/$total$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_configureAIFirst": {
+    "message": "请先在设置里配置 AI"
+  },
+  "sidebar_noUntaggedBookmarks": {
+    "message": "没有需要补标的书签"
+  },
+  "sidebar_aiTagResult": {
+    "message": "已为 $count$ 个书签打标",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiTagResultPartial": {
+    "message": "已为 $count$ 个书签打标（$skipped$ 个 AI 未给建议）",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "sidebar_aiTagNoSuggestions": {
+    "message": "AI 未给出任何标签建议，可手动打标"
+  },
+  "sidebar_aiTagFailed": {
+    "message": "AI 补标失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiAnalyzing": {
+    "message": "AI 分析中…"
+  },
+  "sidebar_tagsOrganized": {
+    "message": "标签已整理"
+  },
+  "sidebar_organizeFailed": {
+    "message": "整理失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupDialogTitle": {
+    "message": "AI 整理建议"
+  },
+  "sidebar_cleanupDirectionHint": {
+    "message": "对结果不满意？告诉 AI 你的想法（可选）"
+  },
+  "sidebar_cleanupDirectionPlaceholder": {
+    "message": "例如：保留 CSS / 再激进一些 / 不要删除具体技术名"
+  },
+  "sidebar_cleanupReanalyze": {
+    "message": "重新分析"
+  },
+  "sidebar_cleanupExecute": {
+    "message": "执行"
+  },
+  "sidebar_cleanupNoSuggestions": {
+    "message": "AI 没有给出整理建议。尝试在上方输入方向后重新分析。"
+  },
+  "sidebar_cleanupMergeSection": {
+    "message": "合并 ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupDeleteSection": {
+    "message": "删除 ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_cleanupAnalyzing": {
+    "message": "分析中…"
+  },
+  "sidebar_cleanupReanalyzing": {
+    "message": "AI 正在重新分析…"
+  },
+  "sidebar_cleanupReanalyzingWithDirection": {
+    "message": "AI 正在重新分析，参考你的方向…"
+  },
+  "sidebar_cleanupReanalyzeFailed": {
+    "message": "重新分析失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_rename": {
+    "message": "重命名"
+  },
+  "sidebar_newTagName": {
+    "message": "新标签名"
+  },
+  "sidebar_renameFailed": {
+    "message": "重命名失败"
+  },
+  "sidebar_deleteFailed": {
+    "message": "删除失败"
+  },
+  "search_placeholder": {
+    "message": "搜索书签或输入网址..."
+  },
+  "header_bookmarkCount": {
+    "message": "$count$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_pinsEmpty": {
+    "message": "在任意书签上右键 → 设为常用，即可在此显示"
+  },
+  "header_recentSearches": {
+    "message": "最近搜索"
+  },
+  "header_recentVisits": {
+    "message": "最近访问"
+  },
+  "header_shortcut_nav": {
+    "message": "导航"
+  },
+  "header_shortcut_open": {
+    "message": "打开"
+  },
+  "header_shortcut_close": {
+    "message": "关闭"
+  },
+  "header_shortcut_clear": {
+    "message": "清除"
+  },
+  "header_urlDirect": {
+    "message": "直接访问 $url$",
+    "placeholders": {
+      "url": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_urlDirectHint": {
+    "message": "按 Enter 打开网页"
+  },
+  "header_bookmarksMatched": {
+    "message": "书签 · $count$ 个匹配",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_noMatch": {
+    "message": "未找到匹配 \"$query$\" 的书签",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "header_noMatchHint": {
+    "message": "试试用 Google 搜索，或检查拼写"
+  },
+  "header_googleSearch": {
+    "message": "搜索 $query$ → Google",
+    "placeholders": {
+      "query": {
+        "content": "$1"
+      }
+    }
+  },
+  "category_uncategorized": {
+    "message": "未分类"
+  },
+  "tag_searchPlaceholder": {
+    "message": "输入或新建标签…"
+  },
+  "tag_aiAnalyzing": {
+    "message": "AI 分析中…"
+  },
+  "tag_noMatchCreate": {
+    "message": "无匹配项，按 Enter 创建"
+  },
+  "tag_empty": {
+    "message": "还没有标签，输入名称创建第一个"
+  },
+  "tag_createWithName": {
+    "message": "创建 \"$name$\"",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "tag_aiSuggestion": {
+    "message": "AI 建议"
+  },
+  "bk_count": {
+    "message": "$count$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_countFrequent": {
+    "message": "$count$ 个常用",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_countRecent": {
+    "message": "$count$ 个最近添加",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bk_addTagTitle": {
+    "message": "添加标签"
+  },
+  "bk_filterByTag": {
+    "message": "筛选 #$name$",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "settings_title": {
+    "message": "设置"
+  },
+  "settings_section_ai": {
+    "message": "AI 智能分类"
+  },
+  "settings_section_appearance": {
+    "message": "外观"
+  },
+  "settings_section_search": {
+    "message": "搜索"
+  },
+  "settings_section_data": {
+    "message": "数据管理"
+  },
+  "settings_provider_custom": {
+    "message": "自定义 (OpenAI 兼容)"
+  },
+  "settings_ai_disconnected": {
+    "message": "未连接"
+  },
+  "settings_ai_connected": {
+    "message": "已连接"
+  },
+  "settings_ai_connect_failed": {
+    "message": "连接失败"
+  },
+  "settings_ai_verify_error": {
+    "message": "验证出错"
+  },
+  "settings_ai_verify": {
+    "message": "验证连接"
+  },
+  "settings_ai_verifying": {
+    "message": "验证中..."
+  },
+  "settings_ai_apikey_placeholder": {
+    "message": "粘贴你的密钥到这里..."
+  },
+  "settings_ai_auto_classify": {
+    "message": "自动分类新书签"
+  },
+  "settings_ai_auto_classify_desc": {
+    "message": "收藏时自动推荐分类"
+  },
+  "settings_ai_auto_confirm": {
+    "message": "高置信度自动确认"
+  },
+  "settings_ai_auto_confirm_desc": {
+    "message": "置信度 > 80% 时 5 秒后自动归类"
+  },
+  "settings_theme": {
+    "message": "主题"
+  },
+  "settings_theme_system": {
+    "message": "跟随系统"
+  },
+  "settings_theme_light": {
+    "message": "亮色"
+  },
+  "settings_theme_dark": {
+    "message": "暗色"
+  },
+  "settings_accent_color": {
+    "message": "主题色"
+  },
+  "settings_custom_color": {
+    "message": "自定义颜色"
+  },
+  "settings_color_violet": {
+    "message": "紫罗兰"
+  },
+  "settings_color_cobalt": {
+    "message": "钴蓝"
+  },
+  "settings_color_emerald": {
+    "message": "翠绿"
+  },
+  "settings_color_amber": {
+    "message": "琥珀"
+  },
+  "settings_color_rose": {
+    "message": "玫红"
+  },
+  "settings_compact_mode": {
+    "message": "紧凑模式"
+  },
+  "settings_compact_mode_desc": {
+    "message": "减小行间距，显示更多书签"
+  },
+  "settings_default_engine": {
+    "message": "默认搜索引擎"
+  },
+  "settings_auto_search": {
+    "message": "打开即搜索"
+  },
+  "settings_auto_search_desc": {
+    "message": "新标签页打开时自动弹出搜索面板"
+  },
+  "settings_export_title": {
+    "message": "导出书签"
+  },
+  "settings_export_desc": {
+    "message": "导出为 JSON 或 HTML"
+  },
+  "settings_export_btn": {
+    "message": "导出"
+  },
+  "settings_import_title": {
+    "message": "导入书签"
+  },
+  "settings_import_desc": {
+    "message": "从文件导入"
+  },
+  "settings_import_btn": {
+    "message": "导入"
+  },
+  "ai_drawer_title": {
+    "message": "AI 整理书签"
+  },
+  "ai_init_desc": {
+    "message": "AI 将分析你的书签的标题和 URL，<br>与当前分类结构对比后生成整理方案。<br><br>你可以逐条确认或拒绝每个建议。"
+  },
+  "ai_init_desc_with_count": {
+    "message": "AI 将分析你的 $count$ 个书签 的标题和 URL，<br>与当前分类结构对比后生成整理方案。<br><br>你可以逐条确认或拒绝每个建议。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_start_analysis": {
+    "message": "开始分析"
+  },
+  "ai_analyzing": {
+    "message": "正在分析..."
+  },
+  "ai_progress_label_1": {
+    "message": "读取书签结构..."
+  },
+  "ai_progress_label_2": {
+    "message": "分析标题和 URL..."
+  },
+  "ai_progress_label_3": {
+    "message": "匹配分类规则..."
+  },
+  "ai_progress_label_4": {
+    "message": "生成移动建议..."
+  },
+  "ai_need_config_title": {
+    "message": "请先在设置中配置 AI 服务"
+  },
+  "ai_need_config_desc": {
+    "message": "请前往「设置 → AI 智能分类」填写 API Key，<br>然后回到此处开始分析。"
+  },
+  "ai_go_settings": {
+    "message": "前往设置"
+  },
+  "ai_section_new_categories": {
+    "message": "建议新增分类"
+  },
+  "ai_section_suggested_moves": {
+    "message": "建议移动"
+  },
+  "ai_contains_count": {
+    "message": "归入 $count$ 个",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_dismiss": {
+    "message": "不需要"
+  },
+  "ai_stat_total": {
+    "message": "总书签"
+  },
+  "ai_stat_moves": {
+    "message": "建议移动"
+  },
+  "ai_stat_new_cats": {
+    "message": "新增分类"
+  },
+  "ai_footer_default": {
+    "message": "分析所有书签的标题和 URL"
+  },
+  "ai_close": {
+    "message": "关闭"
+  },
+  "ai_selected_count": {
+    "message": "已选 $done$/$total$ 项",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "ai_select_all": {
+    "message": "全选"
+  },
+  "ai_clear_all": {
+    "message": "清空"
+  },
+  "ai_execute": {
+    "message": "执行整理"
+  },
+  "ai_done_title": {
+    "message": "整理完成"
+  },
+  "ai_done_desc": {
+    "message": "已移动 $moved$ 个书签<br>新增 $newcats$ 个分类",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "newcats": {
+        "content": "$2"
+      }
+    }
+  },
+  "ai_changes_applied": {
+    "message": "变更已应用"
+  },
+  "ai_done_btn": {
+    "message": "完成"
+  },
+  "ai_undo_countdown": {
+    "message": "撤销（$sec$s）",
+    "placeholders": {
+      "sec": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_confirmed": {
+    "message": "已确认"
+  },
+  "ai_undone_title": {
+    "message": "已撤销"
+  },
+  "ai_undone_desc": {
+    "message": "所有书签已恢复原位"
+  },
+  "ai_changes_reverted": {
+    "message": "变更已撤销"
+  },
+  "toast_ai_badge": {
+    "message": "AI 分类"
+  },
+  "toast_best_match_found": {
+    "message": "已为你找到最佳分类"
+  },
+  "toast_confirm": {
+    "message": "确认分类"
+  },
+  "toast_choose_other": {
+    "message": "选择其他"
+  },
+  "toast_no_categories": {
+    "message": "暂无分类"
+  },
+  "toast_load_categories_failed": {
+    "message": "加载分类失败"
+  },
+  "toast_auto_confirm_countdown": {
+    "message": "$sec$ 秒后自动确认",
+    "placeholders": {
+      "sec": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_title": {
+    "message": "MarkPage"
+  },
+  "newtab_title": {
+    "message": "新标签页 — MarkPage"
+  },
+  "popup_loading": {
+    "message": "加载中..."
+  },
+  "popup_errorNoTab": {
+    "message": "无法获取当前页面信息"
+  },
+  "popup_errorInitFailed": {
+    "message": "初始化失败，请重试"
+  },
+  "popup_aiBadge": {
+    "message": "AI"
+  },
+  "popup_aiAnalyzing": {
+    "message": "正在分析最佳分类..."
+  },
+  "popup_statusSaved": {
+    "message": "已收藏"
+  },
+  "popup_aiUnavailable": {
+    "message": "AI 分析暂不可用，请手动选择分类"
+  },
+  "popup_btnSave": {
+    "message": "收藏"
+  },
+  "popup_labelSaveTo": {
+    "message": "保存到："
+  },
+  "popup_aiCategoryBadge": {
+    "message": "AI 分类"
+  },
+  "popup_aiFoundBestCategory": {
+    "message": "已为你找到最佳分类"
+  },
+  "popup_createNewCategory": {
+    "message": "新建 \"$1\""
+  },
+  "popup_confirmWithPercent": {
+    "message": "确认分类 ($1%)"
+  },
+  "popup_confirm": {
+    "message": "确认分类"
+  },
+  "popup_confirmWithPct": {
+    "message": "确认分类 ($1)"
+  },
+  "popup_selectOther": {
+    "message": "选择其他"
+  },
+  "popup_aiSuggestion": {
+    "message": "AI 分类建议"
+  },
+  "popup_alternatives": {
+    "message": "备选："
+  },
+  "popup_suggestNewCategory": {
+    "message": "建议新分类："
+  },
+  "popup_analyzing": {
+    "message": "分析中..."
+  },
+  "popup_classifyRetry": {
+    "message": "分类失败，重试"
+  },
+  "popup_savedToCategory": {
+    "message": "已收藏到 \"$1\""
+  },
+  "popup_saveFailed": {
+    "message": "收藏失败：$1"
+  },
+  "popup_unknownError": {
+    "message": "未知错误"
+  },
+  "popup_chooseCategory": {
+    "message": "选择分类"
+  },
+  "popup_newCategoryPlaceholder": {
+    "message": "或创建新分类..."
+  },
+  "popup_createBtn": {
+    "message": "创建"
+  },
+  "popup_back": {
+    "message": "返回"
+  },
+  "bg_notifyTitle": {
+    "message": "MarkPage 分类建议"
+  },
+  "bg_notifyMessage": {
+    "message": "\"$1\" → $2 ($3%)"
+  }
+}

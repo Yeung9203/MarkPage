@@ -17,6 +17,7 @@
  */
 
 import { h, on } from '@/utils/dom';
+import { t } from '@/utils/i18n';
 import type { Bookmark } from '@/types';
 import {
   updateBookmark, moveBookmark, removeBookmark, getBookmarkTree, extractCategories,
@@ -88,7 +89,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
   const items = [
     {
       icon: iconCopy(),
-      label: '复制链接',
+      label: t('ctx_copyLink'),
       action: () => {
         navigator.clipboard.writeText(bookmark.url).catch(() => {
           // 静默失败
@@ -97,7 +98,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
     },
     {
       icon: iconEdit(),
-      label: '编辑书签',
+      label: t('ctx_editBookmark'),
       action: () => {
         showEditForm(bookmark);
       },
@@ -105,7 +106,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
     {
       // 编辑标签：弹出标签 popover，锚定书签所在行
       icon: iconEdit(),
-      label: '编辑标签',
+      label: t('ctx_editTags'),
       action: async () => {
         const row = document.querySelector(
           `.bk-row[data-bookmark-id="${bookmark.id}"]`,
@@ -128,7 +129,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
     },
     {
       icon: iconMove(),
-      label: '移动到...',
+      label: t('ctx_moveTo'),
       action: () => {
         showMovePanel(bookmark);
       },
@@ -136,7 +137,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
     {
       icon: markedFrequent ? iconStarFilled() : iconStar(),
       starred: markedFrequent,
-      label: markedFrequent ? '取消常用' : '设为常用',
+      label: markedFrequent ? t('ctx_unpinFrequent') : t('ctx_pinFrequent'),
       action: async () => {
         // 切换常用标记（存储到 storage，不移动书签）
         try {
@@ -202,7 +203,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
     { divider: true },
     {
       icon: iconTrash(),
-      label: '删除',
+      label: t('ctx_delete'),
       danger: true,
       action: async () => {
         // 执行删除操作
@@ -227,7 +228,7 @@ export async function showContextMenu(top: number, left: number, bookmark: Bookm
             const headerCount = document.getElementById('headerCount');
             if (headerCount) {
               const total = document.querySelectorAll('.bk-row').length;
-              headerCount.textContent = `${total} 个书签`;
+              headerCount.textContent = t('common_bookmarkCount', [String(total)]);
             }
           }
           console.log(`[MarkPage] 已删除书签 "${bookmark.title}"`);
@@ -302,7 +303,7 @@ function showEditForm(bookmark: Bookmark): void {
   const titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.value = bookmark.title;
-  titleInput.placeholder = '标题';
+  titleInput.placeholder = t('ctx_editPlaceholderTitle');
   titleInput.style.cssText = 'flex:1;min-width:0;padding:4px 8px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-2);border:1px solid var(--border);border-radius:4px;outline:none';
 
   // URL 输入框
@@ -315,12 +316,12 @@ function showEditForm(bookmark: Bookmark): void {
   // 保存按钮
   const saveBtn = h('button', {
     style: 'padding:4px 10px;font-family:var(--font);font-size:11px;font-weight:500;border:none;border-radius:4px;cursor:pointer;color:white;background:var(--accent);white-space:nowrap',
-  }, '保存');
+  }, t('common_save'));
 
   // 取消按钮
   const cancelBtn = h('button', {
     style: 'padding:4px 10px;font-family:var(--font);font-size:11px;font-weight:500;border:none;border-radius:4px;cursor:pointer;color:var(--text-2);background:var(--bg-3);white-space:nowrap',
-  }, '取消');
+  }, t('common_cancel'));
 
   on(saveBtn, 'click', async () => {
     const newTitle = titleInput.value.trim();
@@ -414,7 +415,7 @@ async function showMovePanel(bookmark: Bookmark): Promise<void> {
   // 标题
   const title = h('div', {
     style: 'display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-3);padding:6px 10px 8px;letter-spacing:0.02em;text-transform:uppercase',
-  }, '移动到');
+  }, t('ctx_moveToTitle'));
   panel.appendChild(title);
 
   // 获取分类列表
@@ -426,7 +427,7 @@ async function showMovePanel(bookmark: Bookmark): Promise<void> {
       // 没有分类时显示提示
       panel.appendChild(h('div', {
         style: 'font-size:12px;color:var(--text-3);padding:8px',
-      }, '暂无可用分类'));
+      }, t('ctx_noCategories')));
     } else {
       /**
        * 递归渲染一个分类项（含所有后代）
@@ -471,7 +472,7 @@ async function showMovePanel(bookmark: Bookmark): Promise<void> {
     console.error('[MarkPage] 获取分类失败:', error);
     panel.appendChild(h('div', {
       style: 'font-size:12px;color:var(--text-3);padding:8px',
-    }, '加载分类失败'));
+    }, t('ctx_loadCategoriesFailed')));
   }
 
   document.body.appendChild(panel);

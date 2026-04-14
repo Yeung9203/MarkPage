@@ -41,3 +41,6 @@ design-v2-linear.html
 # 设计源文件（仅保留 public/icons 下的构建产物）
 /MarkPage.png
 /MarkPage-Round.png
+
+# i18n 临时产物（agent 生成 → 合并入 public/_locales/ 后丢弃）
+.i18n-staging/
