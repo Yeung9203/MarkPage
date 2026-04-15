@@ -1,0 +1,17 @@
+title: MarkPage
+description: Smart bookmark manager — AI auto-tagging, powerful search, beautiful new tab
+theme: jekyll-theme-minimal
+include:
+  - PRIVACY.md
+exclude:
+  - node_modules
+  - dist
+  - src
+  - public
+  - "*.json"
+  - "*.ts"
+  - "*.html"
+  - vite.config.ts
+  - tsconfig.json
+  - .i18n-staging
+  - docs
