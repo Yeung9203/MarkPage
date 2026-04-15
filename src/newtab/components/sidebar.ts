@@ -25,7 +25,7 @@ import { batchSuggestTags, cleanupTagSuggest } from '@/services/tag-ai';
 import { renameTag, deleteTag, mergeTag, findTagIdByName } from '@/services/tags';
 import { getSettings } from '@/services/storage';
 import {
-  iconGlobe, iconStar, iconClock, iconSettings, iconAI
+  iconGlobe, iconStar, iconClock, iconSettings, iconAI, iconSparkle
 } from './icons';
 import {
   getCategoryIcon, getCategoryIconKey, setCustomIcon,
@@ -366,13 +366,19 @@ async function renderTagsSection(
       (bk) => !bk.tags || bk.tags.length === 0,
     );
 
-    // 空状态
+    // 空状态：仍要给出 AI 补标入口，让新用户能一键启动
     if (defs.length === 0) {
       const empty = h('div', {
         style: 'padding:8px 12px;font-size:12px;color:var(--text-4);line-height:1.5',
       }, t('sidebar_tagsEmpty'));
       container.appendChild(empty);
 
+      // 仅当存在未打标书签时显示 AI 补标按钮
+      if (untagged.length > 0) {
+        container.appendChild(
+          buildAIBatchButton(container, sidebar, onNav, untagged, defs.map((d) => d.name), aiConfigured),
+        );
+      }
       return;
     }
 
@@ -479,6 +485,13 @@ async function renderTagsSection(
       container.appendChild(toggleBtn);
     }
 
+    // "AI 补标全部"按钮（仅当存在未打标书签时显示）
+    if (untagged.length > 0) {
+      container.appendChild(
+        buildAIBatchButton(container, sidebar, onNav, untagged, defs.map((d) => d.name), aiConfigured),
+      );
+    }
+
     // "AI 整理标签"按钮（标签数 ≥ 5 时才显示）
     if (defs.length >= 5) {
       container.appendChild(
@@ -508,6 +521,7 @@ function buildAIBatchButton(
   onNav: NavCallback,
   untagged: Bookmark[],
   existingTagNames: string[],
+  aiConfigured = true,
 ): HTMLElement {
   const btn = h('button', {
     class: 'sidebar-ai-btn',
@@ -515,11 +529,17 @@ function buildAIBatchButton(
   });
   const total = untagged.length;
   btn.innerHTML = `
-    <span style="width:14px;height:14px;display:flex;align-items:center">${iconAI(14)}</span>
+    <span style="width:14px;height:14px;display:flex;align-items:center">${iconSparkle(14)}</span>
     ${t('sidebar_aiTagAll', [String(total)])}
   `;
   on(btn, 'click', async () => {
     console.log('[MarkPage] AI 补标按钮点击，未打标书签数:', untagged.length);
+    // 实时读取设置：避免侧边栏渲染后用户才去配置 AI 时的闭包过期
+    const latest = await getSettings();
+    if (!latest.ai?.apiKey || !latest.ai?.model) {
+      showInlineToast(t('sidebar_configureAIFirst'));
+      return;
+    }
     if ((btn as HTMLButtonElement).disabled) {
       console.log('[MarkPage] 按钮已禁用，跳过');
       return;
@@ -545,7 +565,7 @@ function buildAIBatchButton(
         settings.ai,
         (done, total2) => {
           btn.innerHTML = `
-            <span style="width:14px;height:14px;display:flex;align-items:center">${iconAI(14)}</span>
+            <span style="width:14px;height:14px;display:flex;align-items:center">${iconSparkle(14)}</span>
             ${t('sidebar_aiTaggingProgress', [String(done), String(total2)])}
           `;
         },
