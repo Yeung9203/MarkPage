@@ -1,6 +1,12 @@
-# MarkPage
+<p align="center">
+  <img src="public/icons/icon128.png" alt="MarkPage" width="96" height="96" />
+</p>
 
-Linear 风格, 智能书签管理 Chrome 扩展 —— AI 自动分类、标签整理、美观新标签页。
+<h1 align="center">MarkPage</h1>
+
+<p align="center">
+  Linear 风格的智能书签管理 Chrome 扩展 —— AI 自动分类、标签整理、美观新标签页。
+</p>
 
 ## 界面预览
 
