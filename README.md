@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="public/icons/icon128.png" alt="MarkPage" width="96" height="96" />
+  <img src="docs/screenshots/Frame%2020.png" alt="MarkPage AI — Smart organization for your bookmarks" />
 </p>
-
-<h1 align="center">MarkPage</h1>
 
 <p align="center">
   Linear 风格的智能书签管理 Chrome 扩展 —— AI 自动分类、标签整理、美观新标签页。
@@ -13,6 +11,20 @@
 | 深色模式 | 浅色模式 |
 | :---: | :---: |
 | ![深色模式](docs/screenshots/newtab-dark.png) | ![浅色模式](docs/screenshots/newtab-light.png) |
+
+## 功能截图
+
+### AI 自动标记
+![AI 自动标记](docs/screenshots/Frame%2027.png)
+
+### AI 整理旧书签
+![AI 整理旧书签](docs/screenshots/Frame%2026.png)
+
+### 智能搜索
+![智能搜索](docs/screenshots/Frame%2025.png)
+
+### 自定义样式
+![自定义样式](docs/screenshots/Frame%2024.png)
 
 ## 功能亮点
 
