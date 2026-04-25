@@ -16,6 +16,11 @@
 
 /* —— Logo 区域 —— */
 .sidebar-logo {
+  /*
+   * 左内边距让 "MarkPage" 文字与下方菜单文字（如 "All bookmarks"）左缘对齐：
+   * 下方文字左缘 = sidebar-categories(8) + sidebar-item(12) + icon(20) + gap(8) = 48px
+   * 上方文字左缘 = padding-left(16) + logo-icon(24) + gap(8) = 48px
+   */
   padding: var(--space-4) var(--space-4) var(--space-3);
   display: flex;
   align-items: center;
@@ -23,9 +28,9 @@
 }
 
 .sidebar-logo-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   background-image: url('/icons/logo.png');
   background-size: cover;
   background-position: center;
@@ -48,7 +53,8 @@
 }
 
 .sidebar-section-label {
-  padding: var(--space-2) var(--space-3);
+  /* 顶部留出呼吸感把上一块推开，底部贴近自己列表 */
+  padding: var(--space-5) var(--space-3) var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   color: var(--text-4);
@@ -92,6 +98,8 @@
   flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid transparent;
+  /* 默认弱化为「线稿」灰，hover/激活时再亮起来 */
+  color: var(--text-4);
   transition: all var(--fast);
   cursor: pointer;
 }
@@ -101,7 +109,17 @@
   height: 16px;
 }
 
-/* 仅图标区域直接悬停时才出现反馈 */
+/* 行 hover：图标提到中灰，与文字一同被强调 */
+.sidebar-item:hover .sidebar-item-icon {
+  color: var(--text-2);
+}
+
+/* 行激活：图标点亮为品牌色，强化"被选中"信号 */
+.sidebar-item.active .sidebar-item-icon {
+  color: var(--accent);
+}
+
+/* 仅图标区域直接悬停时才出现反馈（用于打开图标选择器） */
 .sidebar-item[data-category-name] .sidebar-item-icon:hover {
   background: var(--accent-soft);
   color: var(--accent);
@@ -341,18 +359,130 @@
   background: none;
   border: none;
   border-radius: 4px;
-  color: var(--text-3);
+  /* 默认色降一档：text-4（更灰、更克制） */
+  color: var(--text-4);
   font-size: 14px;
   cursor: pointer;
-  visibility: hidden;
-  transition: background var(--fast), color var(--fast);
+  /* 默认隐藏，hover 所属区块时才浮出 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fast), background var(--fast), color var(--fast);
 }
-.sidebar:hover .sidebar-section-add {
-  visibility: visible;
+.sidebar-categories-block:hover .sidebar-section-add {
+  opacity: 1;
+  pointer-events: auto;
 }
 .sidebar-section-add:hover {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
+}
+
+/* —— 标签标题右侧的 "✨ 整理 ▾" AI 操作触发器 —— */
+.sidebar-section-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  border-radius: 999px; /* 胶囊形状，强化"按钮"识别 */
+  /* 默认色降一档：text-4（更灰、更克制） */
+  color: var(--text-4);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  /* 默认隐藏，hover 所属 TAGS 区块时才浮出 */
+  opacity: 0;
+  pointer-events: none;
+  transition: background var(--fast), color var(--fast), opacity var(--fast);
+}
+.sidebar-tags-container:hover .sidebar-section-ai,
+.sidebar-section-ai.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* 菜单打开时维持触发器的 hover 视觉，让用户感受到"还在交互中" */
+.sidebar-section-ai.is-open {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+.sidebar-section-ai:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+.sidebar-section-ai .sai-spark {
+  display: inline-flex;
+  align-items: center;
+}
+.sidebar-section-ai .sai-text {
+  line-height: 1;
+  letter-spacing: 0;
+  /* 文字不参与 uppercase（与 TAGS 大写标签风格区隔，看起来像"动作"） */
+  text-transform: none;
+}
+.sidebar-section-ai .sai-caret {
+  display: inline-flex;
+  align-items: center;
+  margin-left: -2px;
+  opacity: 0.7;
+}
+.sidebar-section-ai .sai-caret > svg {
+  width: 10px;
+  height: 10px;
+  /* SVG chevron 默认笔画粗细对小尺寸偏粗，做一点视觉补偿 */
+  stroke-width: 2.4;
+}
+
+/* —— TAGS AI 菜单浮层 —— */
+.tags-ai-menu {
+  position: fixed;
+  min-width: 220px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+  z-index: 2000;
+  font-family: var(--font);
+}
+.tags-ai-menu .tam-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--text-1);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--fast);
+}
+.tags-ai-menu .tam-item:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.tags-ai-menu .tam-item:disabled {
+  cursor: not-allowed;
+  color: var(--text-4);
+  opacity: 0.65;
+}
+.tags-ai-menu .tam-label {
+  flex: 1;
+  min-width: 0;
+}
+.tags-ai-menu .tam-count {
+  font-size: 11px;
+  color: var(--text-4);
+  flex-shrink: 0;
+}
+.tags-ai-menu .tam-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
 }
 
 /* —— 分类嵌套：单击分类项自身切换展开/折叠，无独立箭头 —— */

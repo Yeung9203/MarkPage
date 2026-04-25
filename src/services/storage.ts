@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: Settings = {
     provider: 'openai',
     apiKey: '',
     model: 'gpt-4o-mini',
-    enabled: false,
+    enabled: true,
     autoConfirm: true,
     autoConfirmThreshold: 0.8,
   },

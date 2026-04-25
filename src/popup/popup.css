@@ -22,7 +22,7 @@ body {
 
 /* —— 容器 —— */
 .popup-container {
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -411,140 +411,461 @@ body {
 }
 
 /* ============================================================
-   新版分类布局（参考设计稿）
+   AI 分类决策面板（pc-* 命名空间）— Linear 风格
+
+   - 去卡片 + 去 border：靠 spacing 与字重分组，不用横线切割
+   - 紧凑列表：行高 32px，符合 Linear 信息密度
+   - 单视觉锚点：主推荐用 accent-soft tint + 圆点 mark
+   - 数字克制：tabular-nums，无 %，备选最浅灰
    ============================================================ */
-.popup-classify-layout {
-  gap: 12px;
+/* 不用 gap：每个 section 自带 margin-top 形成"递减 → 分组"的节奏。
+   12 (padding) → 8 (badge→page) → 4 (page→tags) → 16 (新组) → 12 (按钮) */
+.pc {
+  display: flex;
+  flex-direction: column;
 }
 
-/* 顶部 AI 徽章 + 副标题 */
-.popup-classify-top {
+/* —— 顶部 badge —— */
+.pc-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: -2px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 18px;
 }
 
-.popup-classify-subtitle {
-  font-size: 12px;
-  color: var(--text-3);
+.pc-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 var(--space-2);
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
 }
 
-/* 页面信息卡 */
-.popup-page-card {
+/* —— 网页区 —— */
+.pc-page {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: var(--space-3);
+  margin-top: var(--space-2); /* 8px from badge */
+}
+
+.pc-page-fav {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
   background: var(--bg-2);
-  border-radius: 8px;
-}
-
-.popup-page-fav {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: var(--bg-3);
   color: var(--text-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
   flex-shrink: 0;
+  letter-spacing: 0;
 }
 
-.popup-page-info {
+.pc-page-info {
   flex: 1;
   min-width: 0;
 }
 
-.popup-page-title {
-  font-size: 13px;
-  font-weight: 600;
+.pc-page-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   color: var(--text-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 1px;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
 }
 
-.popup-page-url {
-  font-size: 11px;
+.pc-page-url {
+  font-size: var(--text-sm);
   color: var(--text-4);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.4;
 }
 
-/* 分类卡片列表 */
-.popup-folder-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.popup-folder-card {
+/* AI 推荐标签行：与 badge / 网页区共享左基线 */
+.pc-page-tags {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--bg-2);
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: var(--font);
-  transition: all var(--fast);
-  text-align: left;
-  color: var(--text-1);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1); /* 4px - tight to page */
 }
 
-.popup-folder-card svg {
-  width: 16px;
-  height: 16px;
-  color: var(--text-3);
+.pc-page-tags-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
-.popup-folder-card-name {
-  flex: 1;
+.pc-page-tags-label {
+  font-size: 9px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.pc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--bg-3) 45%, transparent);
+  border-radius: var(--radius-sm);
+  transition: background var(--fast) var(--ease);
+}
+
+.pc-tag:hover {
+  background: color-mix(in srgb, var(--bg-3) 80%, transparent);
+}
+
+.pc-tag-name {
+  display: inline-block;
+}
+
+/* 移除 × 按钮：默认隐藏宽度 0，hover chip 时浮出 */
+.pc-tag-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  height: 14px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-3);
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0;
+  transition: width var(--fast) var(--ease), opacity var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.pc-tag:hover .pc-tag-x {
+  width: 12px;
+  opacity: 1;
+}
+
+.pc-tag-x:hover {
+  color: var(--text-1);
+}
+
+/* "+" 添加按钮：与 chip 同高，dashed 边框暗示"可填" */
+.pc-tag-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  font-family: var(--font);
   font-size: 13px;
-  font-weight: 500;
+  line-height: 1;
+  color: var(--text-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+
+.pc-tag-add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* —— Tag Picker：inline 展开，紧贴 tag 行下方插入 popup flex 流 ——
+   不用 fixed/absolute（chrome popup 不会为 fixed 元素自适应增高，会被裁切）。
+   inline 模式下 popup 高度自然撑开，无任何边界问题。 */
+.pc-tagpop {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 220px;
+  margin-top: var(--space-2);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-family: var(--font);
+}
+
+.pc-tagpop-input {
+  height: 28px;
+  padding: 0 var(--space-2);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--text-1);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  flex-shrink: 0;
+}
+
+.pc-tagpop-input::placeholder {
+  color: var(--text-4);
+}
+
+.pc-tagpop-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 3px;
+}
+
+.pc-tagpop-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 24px;
+  padding: 0 var(--space-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font);
+  text-align: left;
+  color: var(--text-2);
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.pc-tagpop-row.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pc-tagpop-row-prefix {
+  width: 10px;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-3);
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.pc-tagpop-row.is-active .pc-tagpop-row-prefix {
+  color: var(--accent);
+}
+
+.pc-tagpop-row-name {
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.popup-folder-card-pct {
-  font-size: 11.5px;
-  font-weight: 600;
+.pc-tagpop-row-hint {
+  font-size: 9px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  flex-shrink: 0;
+}
+
+.pc-tagpop-row.is-active .pc-tagpop-row-hint {
+  color: var(--accent);
+}
+
+.pc-tagpop-empty {
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-4);
+}
+
+/* 自定义滚动条（细，与 popover 美学一致）*/
+.pc-tagpop-list::-webkit-scrollbar {
+  width: 6px;
+}
+.pc-tagpop-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+.pc-tagpop-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* —— 分类列表（无 border，靠 spacing 暗示分组）—— */
+.pc-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: var(--space-4); /* 16px 上方分隔新组；左右与 popup-container padding 对齐，不越界 */
+}
+
+/* 列标题：与 row 内的 name / conf 左右对齐（同 padding 0 12px），small-caps 弱权重 */
+.pc-folders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 16px;
+  padding: 0 var(--space-3);
+  margin-bottom: var(--space-1);
+  font-size: 9px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+.pc-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font);
+  text-align: left;
+  color: var(--text-2);
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+
+.pc-row:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+
+.pc-row.is-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pc-row-name {
+  flex: 1;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.005em;
+}
+
+.pc-row.is-primary .pc-row-name {
+  font-weight: var(--weight-semibold);
+}
+
+.pc-row-conf {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   color: var(--text-4);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
-.popup-folder-card:hover {
-  background: var(--bg-hover);
-  border-color: var(--border);
-}
-
-.popup-folder-card.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-}
-
-.popup-folder-card.active svg,
-.popup-folder-card.active .popup-folder-card-pct {
+.pc-row.is-primary .pc-row-conf {
   color: var(--accent);
+  font-weight: var(--weight-semibold);
 }
 
-/* 新建分类卡片特殊样式 */
-.popup-folder-card--new {
-  border-style: dashed;
-  border-color: var(--border);
+/* 新建分类行的 + 标记：保留字符（语义比圆点更清晰） */
+.pc-row-mark--add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
   color: var(--text-3);
+  flex-shrink: 0;
+  margin-right: var(--space-1);
 }
 
-.popup-folder-card--new:hover {
-  border-color: var(--accent);
+.pc-row--new .pc-row-name {
+  color: var(--text-3);
+  font-weight: var(--weight-medium);
+}
+
+.pc-row--new:hover .pc-row-mark--add,
+.pc-row--new:hover .pc-row-name {
   color: var(--accent);
+}
+
+/* —— 行动区：去 border，靠 margin-top 间距分组 —— */
+.pc-actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  margin-top: var(--space-3); /* 12px from list */
+}
+
+.pc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-family: var(--font);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.005em;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  white-space: nowrap;
+  height: 34px;
+}
+
+.pc-btn--primary {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 var(--space-4);
+  color: white;
+  background: var(--accent);
+}
+
+.pc-btn--primary:hover {
+  background: var(--accent-muted);
+}
+
+.pc-btn--primary:disabled {
+  background: var(--bg-3);
+  color: var(--text-4);
+  cursor: not-allowed;
+}
+
+.pc-btn--ghost {
+  flex: 0 0 auto;
+  padding: 0 var(--space-3);
+  color: var(--text-3);
+  background: transparent;
+}
+
+.pc-btn--ghost:hover {
+  color: var(--text-1);
+  background: var(--bg-hover);
 }

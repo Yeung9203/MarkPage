@@ -50,6 +50,27 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 // ============================================================
+// popup 自处理协调：popup 在创建书签前会先 sendMessage 告知 SW
+// "我已经处理好分类和标签了"，SW 收到 onCreated 时检查 url 命中
+// 即可跳过自动分类 + 自动打标，避免重复消耗 token。
+// ============================================================
+
+/** popup 已自处理的 URL 集合（5 秒后自动过期，防止异常积压） */
+const skipAutoUrls = new Set<string>();
+const SKIP_TTL_MS = 5000;
+
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg?.type === 'markpage:skip-auto' && typeof msg.url === 'string') {
+    const url = msg.url;
+    skipAutoUrls.add(url);
+    setTimeout(() => skipAutoUrls.delete(url), SKIP_TTL_MS);
+    sendResponse({ ok: true });
+    return false;
+  }
+  return false;
+});
+
+// ============================================================
 // 书签变化监听
 // ============================================================
 
@@ -67,12 +88,24 @@ chrome.bookmarks.onCreated.addListener(async (id: string, bookmark: chrome.bookm
   // 忽略文件夹创建
   if (!bookmark.url) return;
 
+  // popup 自处理路径：popup 已经在前台调过 AI 并写好分类与标签，
+  // 这里命中即跳过，避免重复 AI 调用（及其引发的写入抖动）。
+  if (skipAutoUrls.has(bookmark.url)) {
+    skipAutoUrls.delete(bookmark.url);
+    console.log(`[MarkPage] popup 已自处理，跳过后台自动 AI: ${bookmark.title}`);
+    notifyFrontend('bookmark-created', { id, bookmark });
+    return;
+  }
+
   try {
     // 获取用户设置
     const settings = await getSettings();
 
     // 检查 AI 是否启用
     if (!settings.ai.enabled || !settings.ai.apiKey) {
+      console.log(
+        `[MarkPage] 跳过 AI 自动处理 (enabled=${settings.ai.enabled}, hasKey=${!!settings.ai.apiKey})`,
+      );
       // AI 未启用，只通知前端刷新
       notifyFrontend('bookmark-created', { id, bookmark });
       return;
@@ -111,6 +144,7 @@ async function handleAutoTag(
   bookmark: chrome.bookmarks.BookmarkTreeNode,
   aiConfig: AIConfig,
 ): Promise<void> {
+  console.log(`[MarkPage] 自动打标开始: ${bookmark.title}`);
   try {
     // 转换为 Bookmark 类型
     const bookmarkData: Bookmark = {
@@ -124,10 +158,14 @@ async function handleAutoTag(
     // 拉取已有标签名（供 AI 优先复用）
     const defs = await getAllTagDefs();
     const existingNames = defs.map((d) => d.name);
+    console.log(`[MarkPage] 已有标签 (${existingNames.length}):`, existingNames);
 
     // 调用 AI 获取推荐标签
     const suggested = await suggestTagsForBookmark(bookmarkData, existingNames, aiConfig);
+    console.log(`[MarkPage] AI 推荐标签:`, suggested);
+
     if (!suggested || suggested.length === 0) {
+      console.warn(`[MarkPage] AI 判定无明显主题，跳过打标: ${bookmark.title}`);
       return;
     }
 
@@ -142,7 +180,10 @@ async function handleAutoTag(
       }
     }
 
-    if (tagIds.length === 0) return;
+    if (tagIds.length === 0) {
+      console.warn(`[MarkPage] 所有 ensureTag 失败，无可写入标签`);
+      return;
+    }
 
     await setBookmarkTags(bookmark.id, tagIds);
     console.log(`[MarkPage] 后台自动打标成功: ${bookmark.title} → [${suggested.join(', ')}]`);

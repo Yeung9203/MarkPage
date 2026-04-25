@@ -197,6 +197,46 @@
       }
     }
   },
+  "sidebar_aiRetagAll": {
+    "message": "✨ AI re-tag all ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiRetagConfirm": {
+    "message": "Re-run AI tagging on all $count$ bookmarks. Existing tags will be overwritten. Continue?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_tagsAITrigger": {
+    "message": "AI tag tools · Re-tag / Organize"
+  },
+  "sidebar_tagsAITriggerLabel": {
+    "message": "Manage"
+  },
+  "sidebar_aiMenuRetagAll": {
+    "message": "Re-tag all"
+  },
+  "sidebar_aiMenuTagUntagged": {
+    "message": "Tag untagged bookmarks"
+  },
+  "sidebar_aiMenuOrganize": {
+    "message": "Organize tags (merge / clean up)"
+  },
+  "sidebar_aiMenuDisabledNoBookmarks": {
+    "message": "No bookmarks to process"
+  },
+  "sidebar_aiMenuDisabledFewTags": {
+    "message": "Need at least 2 tags to organize"
+  },
+  "sidebar_aiMenuDisabledNoAI": {
+    "message": "Configure AI in Settings first"
+  },
   "sidebar_aiTaggingProgress": {
     "message": "AI tagging $done$/$total$",
     "placeholders": {
@@ -341,6 +381,36 @@
   "header_recentVisits": {
     "message": "Recently visited"
   },
+  "header_recentVisitsEmpty": {
+    "message": "Sites you've opened will show up here"
+  },
+  "time_justNow": {
+    "message": "just now"
+  },
+  "time_minutesAgo": {
+    "message": "$count$ min ago",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "time_hoursAgo": {
+    "message": "$count$ h ago",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "time_daysAgo": {
+    "message": "$count$ d ago",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "header_shortcut_nav": {
     "message": "navigate"
   },
@@ -417,6 +487,14 @@
   "tag_aiSuggestion": {
     "message": "AI suggestion"
   },
+  "tag_maxReached": {
+    "message": "Max $max$ tags per bookmark. Remove one before adding more.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
   "bk_count": {
     "message": "$count$ bookmarks",
     "placeholders": {
@@ -490,6 +568,12 @@
   },
   "settings_ai_apikey_placeholder": {
     "message": "Paste your API key here..."
+  },
+  "settings_ai_baseurl_placeholder": {
+    "message": "Base URL, e.g. https://api.openrouter.ai/v1"
+  },
+  "settings_ai_model_placeholder": {
+    "message": "Model name, e.g. gpt-4o-mini"
   },
   "settings_ai_auto_classify": {
     "message": "Auto-classify new bookmarks"
@@ -823,5 +907,74 @@
   },
   "bg_notifyMessage": {
     "message": "\"$1\" → $2 ($3%)"
+  },
+  "ai_error_baseUrlMissing": {
+    "message": "API base URL not configured. Please set it in Settings."
+  },
+  "ai_error_apiKeyMissing": {
+    "message": "API key not configured. Please set it in Settings."
+  },
+  "ai_error_apiKeyInvalid": {
+    "message": "API key is invalid or expired. Please check your settings."
+  },
+  "ai_error_rateLimited": {
+    "message": "API rate limit exceeded. Please try again later."
+  },
+  "ai_error_quotaExhausted": {
+    "message": "API quota exhausted or insufficient permissions. Please check your account."
+  },
+  "ai_error_httpFailed": {
+    "message": "API request failed (HTTP $status$). Please try again later.",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_error_emptyResponse": {
+    "message": "AI returned empty content. Please try again."
+  },
+  "ai_error_timeout": {
+    "message": "API request timed out (10s). Please check your network."
+  },
+  "ai_error_networkFailed": {
+    "message": "Network request failed: $msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_error_parseFailed": {
+    "message": "Failed to parse AI response. Please try again."
+  },
+  "ai_error_cleanupParseFailed": {
+    "message": "Failed to parse AI cleanup suggestion. Please retry or check the console."
+  },
+  "popup_aiTagsLabel": {
+    "message": "Tags"
+  },
+  "popup_saveToCategory": {
+    "message": "Save to “$name$”",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_tagPickerPlaceholder": {
+    "message": "Search or create…"
+  },
+  "popup_tagPickerEmpty": {
+    "message": "No more tags to add"
+  },
+  "popup_tagPickerCreateHint": {
+    "message": "Create"
+  },
+  "popup_columnCategory": {
+    "message": "Category"
+  },
+  "popup_columnConfidence": {
+    "message": "Confidence"
   }
 }

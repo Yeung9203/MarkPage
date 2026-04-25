@@ -24,6 +24,13 @@ import { h, on, openLink } from '@/utils/dom';
 import type { Bookmark } from '@/types';
 import { iconSearch, iconSun } from './icons';
 import { t } from '@/utils/i18n';
+import { formatRelativeTime } from '@/utils/time';
+import {
+  getRecentVisits,
+  getSearchHistory,
+  saveRecentVisit,
+  saveSearchHistory,
+} from '@/services/storage';
 
 /** 常用站点数据 */
 interface PinSite {
@@ -41,30 +48,12 @@ interface SearchItem {
   color: string;
   letter: string;
   pinyin: string;
-}
-
-/** 最近访问项 */
-interface RecentVisit {
-  title: string;
-  url: string;
-  color: string;
-  letter: string;
-  time: string;
+  /** 原始书签引用，供命中后埋点使用 */
+  _bk: Bookmark;
 }
 
 /** 当前导航选中索引 */
 let inlineIdx = 0;
-
-/** 最近搜索历史 */
-const searchHistory = ['react', 'figma', 'tailwind'];
-
-/** 最近访问数据 */
-const recentVisits: RecentVisit[] = [
-  { title: 'GitHub', url: 'github.com', color: 'f-gray', letter: 'G', time: '3 分钟前' },
-  { title: 'Claude', url: 'claude.ai', color: 'f-amber', letter: 'C', time: '12 分钟前' },
-  { title: 'Linear', url: 'linear.app', color: 'f-purple', letter: 'L', time: '1 小时前' },
-  { title: 'Figma', url: 'figma.com', color: 'f-red', letter: 'F', time: '2 小时前' },
-];
 
 /**
  * 模糊匹配算法
@@ -203,7 +192,19 @@ export function renderHeader(
     color: getColorClass(bk.title),
     letter: bk.title.charAt(0).toUpperCase(),
     pinyin: '',
+    _bk: bk,
   }));
+
+  /**
+   * 当前下拉中"可点击 url 项"对应的书签映射。
+   *
+   * 用于在 bindNavEvents 里点击后回查到 Bookmark，写入访问历史。
+   * 每次 render 前清空，重新填充。
+   */
+  const urlToBookmark: Map<string, Bookmark> = new Map();
+
+  /** 当前搜索关键词（供 Google 兜底项点击时记录搜索历史） */
+  let currentQuery = '';
 
   const header = h('div', { class: 'header' });
 
@@ -293,6 +294,7 @@ export function renderHeader(
 
     on(pin, 'click', (e) => {
       e.preventDefault();
+      void saveRecentVisit(pinAsBookmark(site));
       openLink(`https://${site.url}`, e as MouseEvent);
     });
 
@@ -305,40 +307,73 @@ export function renderHeader(
 
   /**
    * 显示空状态（最近搜索 + 最近访问）
+   *
+   * 异步从 storage 读取真实数据。先显示空骨架避免视觉闪烁，
+   * 再用 storage 数据填充内容。
    */
-  function showEmptyState() {
+  async function showEmptyState() {
     /* 浮层模式下无需隐藏常用站点 */
     inlineIdx = 0;
+    currentQuery = '';
+    urlToBookmark.clear();
+
+    // 先让下拉可见，避免数据到达前的闪烁
+    inlineResults.classList.add('visible');
+
+    // 并发拉取
+    const [searchHistory, visits] = await Promise.all([
+      getSearchHistory(),
+      getRecentVisits(),
+    ]);
+
+    // 截断到前 5 条
+    const recentSearches = searchHistory.slice(0, 5);
+    const recentVisits = visits.slice(0, 5);
 
     let html = '';
 
-    // 最近搜索
-    if (searchHistory.length > 0) {
+    // 最近搜索：为空则不渲染该分组
+    if (recentSearches.length > 0) {
       html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_recentSearches')}</div>`;
-      searchHistory.forEach(term => {
-        html += `<div class="ir-item" data-nav="true" data-search="${term}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
+      recentSearches.forEach(term => {
+        const safe = escapeHtml(term);
+        html += `<div class="ir-item" data-nav="true" data-search="${safe}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
           <span style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--text-4)">${iconSearch(14)}</span>
-          <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${term}</div></div>
+          <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safe}</div></div>
         </div>`;
       });
       html += '</div>';
     }
 
-    // 最近访问
+    // 最近访问：为空时显示提示文案
     html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_recentVisits')}</div>`;
-    recentVisits.forEach(v => {
-      html += `<div class="ir-item" data-nav="true" data-url="https://${v.url}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
-        <span class="${v.color}" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">${v.letter}</span>
-        <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.title}</div><div style="font-size:10px;color:var(--text-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.url}</div></div>
-        <span style="font-size:10px;color:var(--text-4)">${v.time}</span>
-      </div>`;
-    });
+    if (recentVisits.length === 0) {
+      html += `<div style="padding:10px 6px;font-size:12px;color:var(--text-4);text-align:center">${t('header_recentVisitsEmpty')}</div>`;
+    } else {
+      recentVisits.forEach(v => {
+        // 注册 url → bookmark-like，供点击时回查
+        const bkLike: Bookmark = {
+          id: v.id,
+          title: v.title,
+          url: v.url,
+          favicon: v.favicon,
+        };
+        urlToBookmark.set(v.url, bkLike);
+        const displayUrl = v.url.replace(/^https?:\/\//, '');
+        const color = getColorClass(v.title);
+        const letter = (v.title.charAt(0) || '?').toUpperCase();
+        html += `<div class="ir-item" data-nav="true" data-url="${escapeHtml(v.url)}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
+          <span class="${color}" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">${escapeHtml(letter)}</span>
+          <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(v.title)}</div><div style="font-size:10px;color:var(--text-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(displayUrl)}</div></div>
+          <span style="font-size:10px;color:var(--text-4)">${escapeHtml(formatRelativeTime(v.visitedAt))}</span>
+        </div>`;
+      });
+    }
     html += '</div>';
 
     html += `<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> ${t('header_shortcut_nav')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> ${t('header_shortcut_open')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> ${t('header_shortcut_close')}</span></div>`;
 
     inlineResults.innerHTML = html;
-    inlineResults.classList.add('visible');
 
     // 绑定点击事件
     bindNavEvents();
@@ -353,12 +388,16 @@ export function renderHeader(
       inlineResults.innerHTML = '';
       /* 浮层模式下无需恢复常用站点 */
       inlineIdx = 0;
+      currentQuery = '';
+      urlToBookmark.clear();
       return;
     }
 
     /* 浮层模式下无需隐藏常用站点 */
     inlineIdx = 0;
+    urlToBookmark.clear();
     const q = val.trim();
+    currentQuery = q;
 
     // 检测 URL 直达
     const urlDirect = isUrl(q);
@@ -383,7 +422,10 @@ export function renderHeader(
       html += `<div style="margin-bottom:4px"><div style="font-size:10px;font-weight:600;color:var(--text-4);text-transform:uppercase;letter-spacing:0.06em;padding:4px 4px 2px">${t('header_bookmarksMatched', [String(matched.length)])}</div>`;
       matched.forEach((m, i) => {
         const isFirst = !urlDirect && i === 0;
-        html += `<div class="ir-item${isFirst ? ' active' : ''}" data-nav="true" data-url="https://${m.data.url}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
+        const fullUrl = `https://${m.data.url}`;
+        // 注册 url → bookmark 映射，供点击时写入访问历史
+        urlToBookmark.set(fullUrl, m.data._bk);
+        html += `<div class="ir-item${isFirst ? ' active' : ''}" data-nav="true" data-url="${fullUrl}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px">
           <span class="${m.data.color}" style="width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">${m.data.letter}</span>
           <div style="flex:1;min-width:0"><div style="font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${highlight(m.data.title, q)}</div>
           <div style="font-size:10px;color:var(--text-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${highlight(m.data.url, q)}</div></div>
@@ -403,9 +445,9 @@ export function renderHeader(
     }
 
     // Google 搜索
-    html += `<div style="margin-bottom:4px"><div class="ir-google" data-nav="true" data-url="https://www.google.com/search?q=${encodeURIComponent(q)}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;color:var(--text-3);font-size:12px">
+    html += `<div style="margin-bottom:4px"><div class="ir-google" data-nav="true" data-google="true" data-url="https://www.google.com/search?q=${encodeURIComponent(q)}" style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;color:var(--text-3);font-size:12px">
       ${iconSearch(14)}
-      ${t('header_googleSearch', [`<strong>${q}</strong>`])}</div></div>`;
+      ${t('header_googleSearch', [`<strong>${escapeHtml(q)}</strong>`])}</div></div>`;
 
     // 底栏快捷键提示
     html += `<div style="display:flex;gap:12px;padding:6px 6px 2px;font-size:10px;color:var(--text-4)"><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↑↓</kbd> ${t('header_shortcut_nav')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">↵</kbd> ${t('header_shortcut_open')}</span><span><kbd style="font-family:var(--font);font-size:9px;background:var(--bg-3);padding:0 4px;border-radius:2px;font-weight:500;color:var(--text-3)">esc</kbd> ${t('header_shortcut_clear')}</span></div>`;
@@ -424,14 +466,30 @@ export function renderHeader(
 
   /**
    * 为搜索结果绑定导航和点击事件
+   *
+   * 点击分发：
+   *   - data-search    → 把"最近搜索"项填回输入框，重新搜索（不写历史）
+   *   - data-url，且匹配 urlToBookmark → 打开并写入访问历史
+   *   - data-url，且 data-google=true  → 打开并写入搜索历史
+   *   - data-url，其它（如 URL 直达）   → 仅打开
    */
   function bindNavEvents() {
     const items = inlineResults.querySelectorAll('[data-nav]');
     items.forEach(item => {
       on(item as HTMLElement, 'click', (e) => {
-        const url = (item as HTMLElement).getAttribute('data-url');
-        const searchTerm = (item as HTMLElement).getAttribute('data-search');
+        const el = item as HTMLElement;
+        const url = el.getAttribute('data-url');
+        const searchTerm = el.getAttribute('data-search');
+        const isGoogle = el.getAttribute('data-google') === 'true';
+
         if (url) {
+          const bk = urlToBookmark.get(url);
+          if (bk) {
+            // 异步写入但不阻塞跳转
+            void saveRecentVisit(bk);
+          } else if (isGoogle && currentQuery) {
+            void saveSearchHistory(currentQuery);
+          }
           openLink(url, e as MouseEvent);
         } else if (searchTerm) {
           searchInput.value = searchTerm;
@@ -472,8 +530,11 @@ export function renderHeader(
       if (items[inlineIdx]) {
         (items[inlineIdx] as HTMLElement).click();
       } else {
-        const q = searchInput.value;
-        if (q.trim()) openLink('https://www.google.com/search?q=' + encodeURIComponent(q), e as KeyboardEvent);
+        const q = searchInput.value.trim();
+        if (q) {
+          void saveSearchHistory(q);
+          openLink('https://www.google.com/search?q=' + encodeURIComponent(q), e as KeyboardEvent);
+        }
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -520,6 +581,35 @@ export function renderHeader(
   });
 
   return header;
+}
+
+/**
+ * HTML 字符转义，避免拼接字符串注入风险
+ *
+ * @param s - 任意字符串
+ * @returns 转义后的安全字符串
+ */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * 把 PinSite 包装成最小 Bookmark，用于写入访问历史
+ *
+ * @param site - 常用站点
+ * @returns 一个 Bookmark-like 对象（id 加 `pin:` 前缀以区分来源）
+ */
+function pinAsBookmark(site: PinSite): Bookmark {
+  return {
+    id: `pin:${site.url}`,
+    title: site.title,
+    url: `https://${site.url}`,
+  };
 }
 
 /**
@@ -581,6 +671,7 @@ export function refreshHeaderPins(pinnedSites: PinSite[]): void {
     pin.innerHTML = `<span class="pin-fav ${site.colorClass}">${site.letter}</span>${site.title}`;
     pin.addEventListener('click', (e) => {
       e.preventDefault();
+      void saveRecentVisit(pinAsBookmark(site));
       openLink(`https://${site.url}`, e);
     });
     container.appendChild(pin);

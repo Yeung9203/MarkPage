@@ -6,6 +6,10 @@
   Linear 风格的智能书签管理 Chrome 扩展 —— AI 自动分类、标签整理、美观新标签页。
 </p>
 
+<p align="center">
+  <strong>中文</strong> · <a href="README.en.md">English</a>
+</p>
+
 ## 界面预览
 
 | 深色模式 | 浅色模式 |

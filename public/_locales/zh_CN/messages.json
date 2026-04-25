@@ -195,6 +195,46 @@
       }
     }
   },
+  "sidebar_aiRetagAll": {
+    "message": "✨ AI 重新打标全部 ($count$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_aiRetagConfirm": {
+    "message": "将对全部 $count$ 个书签重新执行 AI 打标，会覆盖现有标签。确定？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sidebar_tagsAITrigger": {
+    "message": "AI 标签整理 · 重新打标 / 整理标签"
+  },
+  "sidebar_tagsAITriggerLabel": {
+    "message": "整理"
+  },
+  "sidebar_aiMenuRetagAll": {
+    "message": "重新打标全部"
+  },
+  "sidebar_aiMenuTagUntagged": {
+    "message": "为未打标书签补标"
+  },
+  "sidebar_aiMenuOrganize": {
+    "message": "整理标签（合并/清理）"
+  },
+  "sidebar_aiMenuDisabledNoBookmarks": {
+    "message": "暂无书签可处理"
+  },
+  "sidebar_aiMenuDisabledFewTags": {
+    "message": "至少需要 2 个标签才能整理"
+  },
+  "sidebar_aiMenuDisabledNoAI": {
+    "message": "请先在设置中配置 AI"
+  },
   "sidebar_aiTaggingProgress": {
     "message": "AI 补标中 $done$/$total$",
     "placeholders": {
@@ -339,6 +379,36 @@
   "header_recentVisits": {
     "message": "最近访问"
   },
+  "header_recentVisitsEmpty": {
+    "message": "打开过的网站会出现在这里"
+  },
+  "time_justNow": {
+    "message": "刚刚"
+  },
+  "time_minutesAgo": {
+    "message": "$count$ 分钟前",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "time_hoursAgo": {
+    "message": "$count$ 小时前",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "time_daysAgo": {
+    "message": "$count$ 天前",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "header_shortcut_nav": {
     "message": "导航"
   },
@@ -415,6 +485,14 @@
   "tag_aiSuggestion": {
     "message": "AI 建议"
   },
+  "tag_maxReached": {
+    "message": "最多添加 $max$ 个标签，请先移除一个再添加",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
   "bk_count": {
     "message": "$count$ 个书签",
     "placeholders": {
@@ -488,6 +566,12 @@
   },
   "settings_ai_apikey_placeholder": {
     "message": "粘贴你的密钥到这里..."
+  },
+  "settings_ai_baseurl_placeholder": {
+    "message": "Base URL，例如 https://api.openrouter.ai/v1"
+  },
+  "settings_ai_model_placeholder": {
+    "message": "模型名，例如 gpt-4o-mini"
   },
   "settings_ai_auto_classify": {
     "message": "自动分类新书签"
@@ -821,5 +905,74 @@
   },
   "bg_notifyMessage": {
     "message": "\"$1\" → $2 ($3%)"
+  },
+  "ai_error_baseUrlMissing": {
+    "message": "API 地址未配置，请在设置中填写 API 地址"
+  },
+  "ai_error_apiKeyMissing": {
+    "message": "API Key 未配置，请在设置中填写 API Key"
+  },
+  "ai_error_apiKeyInvalid": {
+    "message": "API Key 无效或已过期，请检查设置"
+  },
+  "ai_error_rateLimited": {
+    "message": "API 调用频率超限，请稍后再试"
+  },
+  "ai_error_quotaExhausted": {
+    "message": "API 额度不足或权限不足，请检查账户"
+  },
+  "ai_error_httpFailed": {
+    "message": "API 请求失败 (HTTP $status$)，请稍后重试",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_error_emptyResponse": {
+    "message": "AI 返回了空内容，请重试"
+  },
+  "ai_error_timeout": {
+    "message": "API 请求超时（10 秒），请检查网络连接"
+  },
+  "ai_error_networkFailed": {
+    "message": "网络请求失败：$msg$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
+  "ai_error_parseFailed": {
+    "message": "AI 返回的格式无法解析，请重试"
+  },
+  "ai_error_cleanupParseFailed": {
+    "message": "AI 整理建议格式无法解析，请重试或查看控制台"
+  },
+  "popup_aiTagsLabel": {
+    "message": "标签"
+  },
+  "popup_saveToCategory": {
+    "message": "保存到「$name$」",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_tagPickerPlaceholder": {
+    "message": "搜索或新建标签…"
+  },
+  "popup_tagPickerEmpty": {
+    "message": "没有可添加的标签"
+  },
+  "popup_tagPickerCreateHint": {
+    "message": "新建"
+  },
+  "popup_columnCategory": {
+    "message": "分组"
+  },
+  "popup_columnConfidence": {
+    "message": "置信度"
   }
 }

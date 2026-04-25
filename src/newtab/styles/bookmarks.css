@@ -10,27 +10,30 @@
   padding: var(--space-4) var(--space-6);
 }
 
-/* —— 分组 —— */
+/* —— 分组：底部一条浅灰分割线，明确区域 —— */
 .bookmark-group,
 .group {
-  margin-bottom: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
+/* 最后一组不加底线，避免列表底部留空线显脏 */
 .bookmark-group:last-child,
 .group:last-child {
   border-bottom: none;
 }
 
-/* —— 分组头 —— */
+/* —— 分组头：去图标，纯字体层级（14px + 灰）做"区段标签" —— */
 .group-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 24px 10px 21px;
-  font-size: 12px;
+  /* 顶部增加留白把上一组撑开；底部贴近自己的列表 */
+  padding: 18px 24px 8px 21px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text-2);
+  /* 灰色再降一档（text-4）：靠字号比书签内容大一档来维持层级 */
+  color: var(--text-4);
   cursor: pointer;
   transition: background var(--fast);
   position: sticky;
@@ -38,6 +41,13 @@
   background: var(--bg-0);
   z-index: 10;
   border-left: 3px solid transparent;
+  letter-spacing: -0.005em;
+}
+
+/* 第一组顶部不需要那么大留白 */
+.group:first-of-type > .group-header,
+.bookmark-group:first-of-type > .group-header {
+  padding-top: 8px;
 }
 
 /* 左侧彩色竖条 — 颜色调淡，不抢视觉 */
@@ -51,46 +61,29 @@
 
 .group-header:hover {
   background: var(--bg-hover);
+  /* 标题 hover 升一档（text-4 → text-3），给点交互反馈 */
+  color: var(--text-3);
 }
-
-.group-icon {
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--text-2);
-}
-.group-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* —— 分组图标颜色变体 —— */
-.gi-dev { background: #3b82f620; color: var(--blue); }
-.gi-doc { background: #22c55e20; color: var(--green); }
-.gi-design { background: #f59e0b20; color: var(--amber); }
-.gi-ai { background: #8b5cf620; color: var(--accent); }
-.gi-social { background: #ef444420; color: var(--red); }
-.gi-uncategorized { background: var(--bg-3); color: var(--text-3); }
 
 .group-name {
   flex: 1;
-  font-size: 12px;
-  font-weight: 600;
+  /* 沿用 .group-header 的 14px / 600，无需重复声明 */
 }
 
 .group-count {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-4);
   font-variant-numeric: tabular-nums;
 }
 
 .group-chevron {
-  width: 16px;
+  /* 占位 24px 与书签行的 fav 列同宽，让分组标题与书签标题在同一基准线对齐 */
+  width: 24px;
   height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-4);
   flex-shrink: 0;
   transition: transform var(--fast) var(--ease);
@@ -198,7 +191,7 @@
 /* —— Grid 行布局（组件使用 bk-row class） —— */
 .bk-row {
   display: grid;
-  grid-template-columns: 24px 1fr 180px 100px 32px;
+  grid-template-columns: 24px 1fr 180px 130px 32px;
   align-items: center;
   gap: 8px;
   padding: 7px 24px;
@@ -244,6 +237,17 @@
   font-weight: 500;
   color: var(--text-3);
   white-space: nowrap;
+  margin-left: 12px;
+}
+
+/* 行内 "+" 添加标签按钮：默认隐藏，行 hover 时浮出，降低非交互态视觉密度 */
+.bk-tag-add {
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+.bk-row:hover .bk-tag-add,
+.bk-row:focus-within .bk-tag-add {
+  opacity: 1;
 }
 
 .bk-actions {

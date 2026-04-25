@@ -28,6 +28,9 @@ import { getSettings } from '@/services/storage';
 import { iconSparkle } from './icons';
 import { t } from '@/utils/i18n';
 
+/** 单个书签允许的最大标签数（与 bookmark-list.ts 中保持一致） */
+const MAX_TAGS_PER_BOOKMARK = 3;
+
 /** 当前显示的单例实例 */
 let currentPopover: HTMLElement | null = null;
 /** 外部点击关闭监听器（便于清理） */
@@ -444,6 +447,37 @@ export function showTagPopover(
   // ---- 操作 ----
 
   /**
+   * 在面板顶部短暂闪现"已达上限"提示条
+   *
+   * 不弹 toast，避免遮挡列表；2.4s 后自动淡出。
+   */
+  function flashLimitHint(): void {
+    // 已存在则只重置定时器
+    let hint = popover.querySelector<HTMLElement>('.tp-limit-hint');
+    if (!hint) {
+      hint = h('div', { class: 'tp-limit-hint' });
+      Object.assign(hint.style, {
+        padding: '6px 12px',
+        background: 'var(--accent-soft, rgba(139, 92, 246, 0.12))',
+        color: 'var(--accent)',
+        fontSize: '11px',
+        borderBottom: '1px solid var(--border)',
+        flexShrink: '0',
+      } as CSSStyleDeclaration);
+      popover.insertBefore(hint, popover.firstChild?.nextSibling || null);
+    }
+    hint.textContent = t('tag_maxReached', [String(MAX_TAGS_PER_BOOKMARK)]);
+    hint.dataset.shown = '1';
+
+    // 重置淡出
+    if (hint.dataset.timer) clearTimeout(Number(hint.dataset.timer));
+    const timer = window.setTimeout(() => {
+      hint?.remove();
+    }, 2400);
+    hint.dataset.timer = String(timer);
+  }
+
+  /**
    * 切换书签与某个已存在标签的关联
    */
   async function toggleTag(tagId: string): Promise<void> {
@@ -452,6 +486,11 @@ export function showTagPopover(
         selected.delete(tagId);
         await removeBookmarkTag(bookmark.id, tagId);
       } else {
+        // 已达上限：拒绝添加并提示
+        if (selected.size >= MAX_TAGS_PER_BOOKMARK) {
+          flashLimitHint();
+          return;
+        }
         selected.add(tagId);
         await addBookmarkTag(bookmark.id, tagId);
       }
@@ -477,6 +516,11 @@ export function showTagPopover(
         allDefs = await getAllTagDefs();
       }
       if (!selected.has(tagId)) {
+        // 已达上限：拒绝添加并提示
+        if (selected.size >= MAX_TAGS_PER_BOOKMARK) {
+          flashLimitHint();
+          return;
+        }
         selected.add(tagId);
         await addBookmarkTag(bookmark.id, tagId);
       }

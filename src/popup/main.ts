@@ -11,6 +11,7 @@
  */
 
 import { classify, saveClassifyHistory } from '@/services/ai';
+import { suggestTagsForBookmark } from '@/services/tag-ai';
 import {
   searchBookmarks,
   createBookmark,
@@ -19,8 +20,9 @@ import {
   getBookmarkTree,
   createFolder,
 } from '@/services/bookmarks';
+import { getAllTagDefs, ensureTag, setBookmarkTags } from '@/services/tags';
 import { getSettings, onSettingsChange } from '@/services/storage';
-import type { ClassifyResult, Settings, Category } from '@/types';
+import type { ClassifyResult, Settings, Category, TagDef } from '@/types';
 import { t } from '@/utils/i18n';
 
 /** 弹窗根元素 */
@@ -37,6 +39,12 @@ let currentSettings: Settings | null = null;
 
 /** 缓存 AI 分类结果，用于"选择其他 → 返回"回到原状态 */
 let cachedClassifyResult: ClassifyResult | null = null;
+
+/** 缓存 AI 推荐标签，confirm 时一并写入新建书签（用户可在 popup 中增删） */
+let cachedSuggestedTags: string[] = [];
+
+/** 缓存所有现有标签定义，供 picker popover 离线展示 */
+let cachedAllTagDefs: TagDef[] = [];
 
 /** 默认设置（Chrome API 不可用时的降级方案） */
 const FALLBACK_SETTINGS: Settings = {
@@ -163,19 +171,33 @@ async function init(): Promise<void> {
     const existingBookmarks = await searchBookmarks(tabInfo.url);
     const isBookmarked = existingBookmarks.some((b) => b.url === tabInfo.url);
 
-    // AI 已配置且未收藏：立即自动分类，无需用户再点按钮
+    // AI 已配置且未收藏：立即自动分类 + 推荐标签，无需用户再点按钮
     if (!isBookmarked && settings.ai.enabled && settings.ai.apiKey) {
       // 先显示"分析中"状态
       renderAnalyzing(tabInfo);
 
       try {
-        const result = await classify(
-          { id: 'pending', title: tabInfo.title, url: tabInfo.url },
-          currentCategories,
-          settings.ai,
-        );
+        // 并行：分类 + 标签推荐（标签失败不阻塞分类）
+        cachedAllTagDefs = await getAllTagDefs().catch(() => [] as TagDef[]);
+        const existingTagNames = cachedAllTagDefs.map((d) => d.name);
+        const [result, suggestedTags] = await Promise.all([
+          classify(
+            { id: 'pending', title: tabInfo.title, url: tabInfo.url },
+            currentCategories,
+            settings.ai,
+          ),
+          suggestTagsForBookmark(
+            { id: 'pending', title: tabInfo.title, url: tabInfo.url },
+            existingTagNames,
+            settings.ai,
+          ).catch((err) => {
+            console.warn('[MarkPage] AI 标签推荐失败:', err);
+            return [] as string[];
+          }),
+        ]);
         cachedClassifyResult = result;
-        renderPopup(tabInfo, false, result);
+        cachedSuggestedTags = suggestedTags;
+        renderPopup(tabInfo, false, result, suggestedTags);
       } catch (err) {
         console.warn('[MarkPage] AI 分类失败，回退到手动收藏:', err);
         renderPopup(tabInfo, false);
@@ -267,6 +289,7 @@ function renderPopup(
   tabInfo: { title: string; url: string },
   isBookmarked: boolean,
   classifyResult?: ClassifyResult,
+  suggestedTags: string[] = [],
 ): void {
   if (!popupRoot) return;
 
@@ -275,7 +298,7 @@ function renderPopup(
 
   // 分类结果模式 — 使用新布局（顶部 AI badge + 内嵌页面卡 + 文件夹卡片列表）
   if (classifyResult && !isBookmarked) {
-    popupRoot.innerHTML = renderClassifyLayout(classifyResult, tabInfo, displayUrl);
+    popupRoot.innerHTML = renderClassifyLayout(classifyResult, tabInfo, displayUrl, suggestedTags);
     bindEvents(tabInfo, isBookmarked);
     return;
   }
@@ -339,88 +362,94 @@ function renderPopup(
 }
 
 /**
- * 渲染完整的 AI 分类布局（参考设计稿）
+ * 渲染 AI 分类布局
  *
- * 结构：
- *   - 顶部：AI 徽章 + "已为你找到最佳分类" 标题 + 关闭按钮
- *   - 中部：内嵌的页面信息卡（favicon + 标题 + URL）
- *   - 推荐列表：文件夹卡片样式（主推荐高亮边框 + 置信度）
- *   - 底部：确认 + 选择其他
+ * 视觉结构（紧凑决策面板，去卡片化）：
+ *   - meta：极小标签 "AI category" + 推荐标签 chips（同一行）
+ *   - page：站点首字母 + 标题 + URL（无背景，靠间距分隔）
+ *   - folders：分类决策列表（主推荐 accent 轻染色，备选透明 hover 变浅）
+ *   - actions：单个全宽主按钮 "Save to X"，次按钮做成 ghost 文字链接
  *
  * @param result - AI 分类结果
  * @param tabInfo - 当前标签页信息
  * @param displayUrl - 截短后的 URL
+ * @param suggestedTags - AI 推荐标签数组（可空）
  * @returns HTML 字符串
  */
 function renderClassifyLayout(
   result: ClassifyResult,
   tabInfo: { title: string; url: string },
   displayUrl: string,
+  suggestedTags: string[] = [],
 ): string {
-  const mainPercent = Math.round(result.confidence * 100);
-  // 取站点首字母作为 favicon 占位
   const letter = (tabInfo.title.charAt(0) || '?').toUpperCase();
 
-  // 主推荐 + 备选合并为统一的文件夹卡片列表
+  // 主推荐 + 备选 → 统一行列表，主推荐高亮 tint
   const allCats = [
     { name: result.category, confidence: result.confidence, isPrimary: true },
-    ...result.alternatives.slice(0, 2).map(a => ({
+    ...result.alternatives.slice(0, 2).map((a) => ({
       name: a.category,
       confidence: a.confidence,
       isPrimary: false,
     })),
   ];
 
-  let folderHtml = '';
-  allCats.forEach((cat, idx) => {
-    const pct = Math.round(cat.confidence * 100);
-    folderHtml += `
-      <button class="popup-folder-card${idx === 0 ? ' active' : ''}" data-category="${escapeHtml(cat.name)}" data-idx="${idx}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span class="popup-folder-card-name">${escapeHtml(cat.name)}</span>
-        <span class="popup-folder-card-pct">${pct}%</span>
-      </button>
-    `;
-  });
+  const folderRowsHtml = allCats
+    .map((cat, idx) => {
+      const conf = Math.round(cat.confidence * 100);
+      const isPrimary = idx === 0;
+      return `
+        <button class="pc-row${isPrimary ? ' is-primary' : ''}" data-category="${escapeHtml(cat.name)}" data-idx="${idx}">
+          <span class="pc-row-name">${escapeHtml(cat.name)}</span>
+          <span class="pc-row-conf">${conf}</span>
+        </button>
+      `;
+    })
+    .join('');
 
-  // 新分类建议（如有）
-  let newCatHtml = '';
-  if (result.newCategory) {
-    newCatHtml = `
-      <button class="popup-folder-card popup-folder-card--new" data-category="${escapeHtml(result.newCategory)}" data-new="1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span class="popup-folder-card-name">${escapeHtml(t('popup_createNewCategory', [result.newCategory]))}</span>
+  // 新分类建议（如有）—— "+ 新分类名"
+  const newCatRowHtml = result.newCategory
+    ? `
+      <button class="pc-row pc-row--new" data-category="${escapeHtml(result.newCategory)}" data-new="1">
+        <span class="pc-row-mark pc-row-mark--add" aria-hidden="true">+</span>
+        <span class="pc-row-name">${escapeHtml(t('popup_createNewCategory', [result.newCategory]))}</span>
       </button>
-    `;
-  }
+    `
+    : '';
+
+  // tag 行 — 始终渲染（即便 AI 推荐为空也要给"+"按钮入口让用户手动加）
+  const tagsBlockHtml = `<div class="pc-page-tags" data-role="pc-tags">${renderTagsRowInner(suggestedTags)}</div>`;
 
   return `
-    <div class="popup-container popup-classify-layout">
-      <div class="popup-classify-top">
-        <span class="popup-ai-badge">${escapeHtml(t('popup_aiCategoryBadge'))}</span>
-        <span class="popup-classify-subtitle">${escapeHtml(t('popup_aiFoundBestCategory'))}</span>
+    <div class="popup-container pc">
+      <div class="pc-meta">
+        <span class="pc-badge">${escapeHtml(t('popup_aiCategoryBadge'))}</span>
       </div>
 
-      <div class="popup-page-card">
-        <div class="popup-page-fav">${escapeHtml(letter)}</div>
-        <div class="popup-page-info">
-          <div class="popup-page-title" title="${escapeHtml(tabInfo.title)}">${escapeHtml(tabInfo.title)}</div>
-          <div class="popup-page-url">${escapeHtml(displayUrl)}</div>
+      <div class="pc-page">
+        <span class="pc-page-fav" aria-hidden="true">${escapeHtml(letter)}</span>
+        <div class="pc-page-info">
+          <div class="pc-page-title" title="${escapeHtml(tabInfo.title)}">${escapeHtml(tabInfo.title)}</div>
+          <div class="pc-page-url">${escapeHtml(displayUrl)}</div>
         </div>
       </div>
 
-      <div class="popup-folder-cards">
-        ${folderHtml}
-        ${newCatHtml}
+      ${tagsBlockHtml}
+
+      <div class="pc-folders">
+        <div class="pc-folders-header">
+          <span>${escapeHtml(t('popup_columnCategory'))}</span>
+          <span>${escapeHtml(t('popup_columnConfidence'))}</span>
+        </div>
+        ${folderRowsHtml}
+        ${newCatRowHtml}
       </div>
 
-      <div class="popup-classify-actions">
-        <button class="popup-btn popup-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">${escapeHtml(t('popup_confirmWithPercent', [String(mainPercent)]))}</button>
-        <button class="popup-btn popup-btn--secondary" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">
+          ${escapeHtml(t('popup_saveToCategory', [result.category]))}
+        </button>
+        <button class="pc-btn pc-btn--ghost" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
       </div>
     </div>
   `;
@@ -471,6 +500,237 @@ function renderClassifyResult(
   `;
 
   return html;
+}
+
+/**
+ * 渲染 tag 行的内部内容（不含外层容器 .pc-page-tags）
+ *
+ * 结构：sparkle icon · TAGS label · chip × N · "+" 按钮
+ * 每个 chip 自带 hover 显示的 × 删除手势；末尾的 "+" 触发选标签 popover
+ */
+function renderTagsRowInner(tags: string[]): string {
+  const sparkleSvg = `
+    <svg class="pc-page-tags-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M7 1.5 L8.2 5.8 L12.5 7 L8.2 8.2 L7 12.5 L5.8 8.2 L1.5 7 L5.8 5.8 Z"/>
+    </svg>
+  `.trim();
+
+  const chipsHtml = tags
+    .map((name) => `
+      <span class="pc-tag" data-tag-name="${escapeHtml(name)}">
+        <span class="pc-tag-name">${escapeHtml(name)}</span>
+        <button type="button" class="pc-tag-x" data-action="remove-tag" data-tag-name="${escapeHtml(name)}" aria-label="Remove ${escapeHtml(name)}">×</button>
+      </span>
+    `)
+    .join('');
+
+  const addBtnHtml = `<button type="button" class="pc-tag-add" data-action="open-tag-picker" aria-label="Add tag">+</button>`;
+
+  return `
+    ${sparkleSvg}
+    <span class="pc-page-tags-label">${escapeHtml(t('popup_aiTagsLabel'))}</span>
+    ${chipsHtml}
+    ${addBtnHtml}
+  `;
+}
+
+/**
+ * 重新渲染 tag 行 inner（保留外层容器，避免抖动）
+ */
+function rerenderTagsRow(): void {
+  const container = popupRoot?.querySelector('[data-role="pc-tags"]');
+  if (!container) return;
+  container.innerHTML = renderTagsRowInner(cachedSuggestedTags);
+  bindTagsRowEvents();
+}
+
+/**
+ * 绑定 tag 行内的 × 删除 / + 添加事件（使用事件委托）
+ */
+function bindTagsRowEvents(): void {
+  const container = popupRoot?.querySelector('[data-role="pc-tags"]') as HTMLElement | null;
+  if (!container) return;
+
+  container.querySelectorAll<HTMLElement>('[data-action="remove-tag"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = btn.getAttribute('data-tag-name') ?? '';
+      cachedSuggestedTags = cachedSuggestedTags.filter((t) => t !== name);
+      rerenderTagsRow();
+    });
+  });
+
+  const addBtn = container.querySelector<HTMLElement>('[data-action="open-tag-picker"]');
+  if (addBtn) {
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showTagPicker(addBtn);
+    });
+  }
+}
+
+/**
+ * 关闭 tag picker popover（如有）
+ */
+let openTagPickerCleanup: (() => void) | null = null;
+function closeTagPicker(): void {
+  if (openTagPickerCleanup) {
+    openTagPickerCleanup();
+    openTagPickerCleanup = null;
+  }
+}
+
+/**
+ * 显示 tag picker popover：搜索 + 已有标签列表 + 未匹配时创建
+ *
+ * 注：此处的"创建"只是把名字加入 cachedSuggestedTags，
+ * 真正的 ensureTag/setBookmarkTags 在用户点 Save 后由 handleConfirmClassify 统一执行。
+ */
+function showTagPicker(anchor: HTMLElement): void {
+  closeTagPicker();
+
+  const tagsRow = popupRoot?.querySelector('[data-role="pc-tags"]') as HTMLElement | null;
+  if (!tagsRow) return;
+
+  const popover = document.createElement('div');
+  popover.className = 'pc-tagpop';
+  popover.setAttribute('role', 'dialog');
+  popover.setAttribute('data-role', 'pc-tagpop');
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'pc-tagpop-input';
+  input.placeholder = t('popup_tagPickerPlaceholder');
+  input.autocomplete = 'off';
+  popover.appendChild(input);
+
+  const list = document.createElement('div');
+  list.className = 'pc-tagpop-list';
+  popover.appendChild(list);
+
+  // 内联展开：插到 tag 行之后，进入 popup-container flex 流；
+  // popup window 会自动撑开高度，避免 fixed 定位被 popup 边界裁切。
+  tagsRow.insertAdjacentElement('afterend', popover);
+
+  let activeIdx = 0;
+
+  const renderList = (): void => {
+    const q = input.value.trim().toLowerCase();
+    const currentSet = new Set(cachedSuggestedTags.map((t) => t.toLowerCase()));
+
+    // 已有标签：未被 cached 的 + 名字含 q
+    const candidates = cachedAllTagDefs
+      .filter((d) => !currentSet.has(d.name.toLowerCase()))
+      .filter((d) => !q || d.name.toLowerCase().includes(q));
+
+    // 计算 "Create new" 项：q 非空且不与已有项完全匹配且不在 cached 中
+    const exactExists = cachedAllTagDefs.some((d) => d.name.toLowerCase() === q);
+    const exactInCached = currentSet.has(q);
+    const showCreate = q.length > 0 && !exactExists && !exactInCached;
+
+    const items: Array<{ kind: 'pick' | 'create'; name: string }> = [
+      ...candidates.map((d) => ({ kind: 'pick' as const, name: d.name })),
+      ...(showCreate ? [{ kind: 'create' as const, name: q }] : []),
+    ];
+
+    if (activeIdx >= items.length) activeIdx = Math.max(0, items.length - 1);
+
+    list.innerHTML = '';
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'pc-tagpop-empty';
+      empty.textContent = t('popup_tagPickerEmpty');
+      list.appendChild(empty);
+      return;
+    }
+
+    items.forEach((it, idx) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = `pc-tagpop-row${idx === activeIdx ? ' is-active' : ''}`;
+      row.setAttribute('data-name', it.name);
+      row.setAttribute('data-kind', it.kind);
+      if (it.kind === 'create') {
+        row.innerHTML = `<span class="pc-tagpop-row-prefix">+</span><span class="pc-tagpop-row-name">${escapeHtml(it.name)}</span><span class="pc-tagpop-row-hint">${escapeHtml(t('popup_tagPickerCreateHint'))}</span>`;
+      } else {
+        row.innerHTML = `<span class="pc-tagpop-row-name">${escapeHtml(it.name)}</span>`;
+      }
+      row.addEventListener('mouseenter', () => {
+        activeIdx = idx;
+        list.querySelectorAll('.pc-tagpop-row').forEach((r) => r.classList.remove('is-active'));
+        row.classList.add('is-active');
+      });
+      row.addEventListener('click', (e) => {
+        e.stopPropagation();
+        commit(it.name);
+      });
+      list.appendChild(row);
+    });
+  };
+
+  const commit = (name: string): void => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    // 去重（不区分大小写）
+    if (cachedSuggestedTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
+      closeTagPicker();
+      return;
+    }
+    cachedSuggestedTags = [...cachedSuggestedTags, trimmed];
+    closeTagPicker();
+    rerenderTagsRow();
+  };
+
+  input.addEventListener('input', () => {
+    activeIdx = 0;
+    renderList();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const rows = list.querySelectorAll('.pc-tagpop-row');
+      if (rows.length === 0) return;
+      activeIdx = (activeIdx + 1) % rows.length;
+      rows.forEach((r, i) => r.classList.toggle('is-active', i === activeIdx));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const rows = list.querySelectorAll('.pc-tagpop-row');
+      if (rows.length === 0) return;
+      activeIdx = (activeIdx - 1 + rows.length) % rows.length;
+      rows.forEach((r, i) => r.classList.toggle('is-active', i === activeIdx));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const active = list.querySelector('.pc-tagpop-row.is-active') as HTMLElement | null;
+      if (active) {
+        const name = active.getAttribute('data-name') ?? '';
+        commit(name);
+      } else {
+        // 没匹配但用户输了文字 → 直接创建
+        const q = input.value.trim();
+        if (q) commit(q);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeTagPicker();
+    }
+  });
+
+  // 点击外部关闭
+  const onOutsideClick = (e: MouseEvent): void => {
+    if (!popover.contains(e.target as Node) && e.target !== anchor) {
+      closeTagPicker();
+    }
+  };
+  setTimeout(() => document.addEventListener('mousedown', onOutsideClick, true), 0);
+
+  openTagPickerCleanup = (): void => {
+    document.removeEventListener('mousedown', onOutsideClick, true);
+    popover.remove();
+  };
+
+  renderList();
+  input.focus();
 }
 
 /**
@@ -540,24 +800,24 @@ function bindEvents(
     });
   });
 
-  // 分类卡片点击 — 切换选中态，更新"确认分类"按钮目标
-  const folderCards = document.querySelectorAll('.popup-folder-card');
-  folderCards.forEach((card) => {
-    card.addEventListener('click', () => {
-      // 更新选中态
-      folderCards.forEach((c) => c.classList.remove('active'));
-      card.classList.add('active');
+  // 分类行点击 — 切换主推荐高亮，更新主按钮目标分类
+  const folderRows = document.querySelectorAll('.pc-row');
+  folderRows.forEach((row) => {
+    row.addEventListener('click', () => {
+      folderRows.forEach((r) => r.classList.remove('is-primary'));
+      row.classList.add('is-primary');
 
-      // 更新确认按钮的 data-category
-      const category = card.getAttribute('data-category') ?? '';
-      const pct = card.querySelector('.popup-folder-card-pct')?.textContent || '';
+      const category = row.getAttribute('data-category') ?? '';
       const confirmBtn = document.getElementById('btn-confirm');
-      if (confirmBtn) {
+      if (confirmBtn && category) {
         confirmBtn.setAttribute('data-category', category);
-        confirmBtn.textContent = pct ? t('popup_confirmWithPct', [pct]) : t('popup_confirm');
+        confirmBtn.textContent = t('popup_saveToCategory', [category]);
       }
     });
   });
+
+  // tag 行的 × / + 操作
+  bindTagsRowEvents();
 }
 
 // ============================================================
@@ -664,7 +924,18 @@ async function handleConfirmClassify(
       await moveBookmark(bookmark.id, targetFolderId);
       finalBookmark = bookmark;
     } else {
-      // 未收藏：直接在目标分类下创建
+      // 未收藏：先告知后台 SW 跳过对这条 URL 的自动 AI 处理
+      // （popup 已经在前台拿到分类与标签结果，写好后无需后台再跑一次）
+      // 必须在 createBookmark 之前 await，确保 SW 收到 hint 时早于 onCreated。
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'markpage:skip-auto',
+          url: tabInfo.url,
+        });
+      } catch (err) {
+        console.warn('[MarkPage] 通知 SW skip-auto 失败，将允许后台重复处理:', err);
+      }
+
       const created = await createBookmark(tabInfo.title, tabInfo.url, targetFolderId);
       finalBookmark = {
         id: created.id,
@@ -673,10 +944,29 @@ async function handleConfirmClassify(
       };
     }
 
-    // 3. 保存分类历史（供 AI 后续学习）
+    // 3. 写入 AI 推荐的标签（如有）
+    if (cachedSuggestedTags.length > 0) {
+      try {
+        const tagIds: string[] = [];
+        for (const name of cachedSuggestedTags) {
+          try {
+            tagIds.push(await ensureTag(name));
+          } catch (err) {
+            console.warn('[MarkPage] ensureTag 失败:', name, err);
+          }
+        }
+        if (tagIds.length > 0) {
+          await setBookmarkTags(finalBookmark.id, tagIds);
+        }
+      } catch (err) {
+        console.warn('[MarkPage] 写入推荐标签失败:', err);
+      }
+    }
+
+    // 4. 保存分类历史（供 AI 后续学习）
     await saveClassifyHistory(finalBookmark, category);
 
-    // 4. 显示成功状态
+    // 5. 显示成功状态
     if (popupRoot) {
       popupRoot.innerHTML = `
         <div class="popup-container">
@@ -688,7 +978,7 @@ async function handleConfirmClassify(
       `;
     }
 
-    // 5. 500ms 后自动关闭弹窗（让 Chrome 的星星图标动画更新）
+    // 6. 500ms 后自动关闭弹窗（让 Chrome 的星星图标动画更新）
     setTimeout(() => {
       if (typeof chrome !== 'undefined' && chrome.tabs) {
         window.close();
@@ -764,7 +1054,7 @@ function handleSelectOther(tabInfo: { title: string; url: string }): void {
 
   // 返回按钮 — 回到 AI 分类建议页（如果有）或未收藏状态
   document.getElementById('btn-back')?.addEventListener('click', () => {
-    renderPopup(tabInfo, false, cachedClassifyResult || undefined);
+    renderPopup(tabInfo, false, cachedClassifyResult || undefined, cachedSuggestedTags);
   });
 
   // 创建新分类并归类

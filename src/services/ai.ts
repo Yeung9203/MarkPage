@@ -12,6 +12,7 @@
 
 import type { Bookmark, Category, AIConfig, ClassifyResult } from '@/types';
 import { get, set } from '@/services/storage';
+import { isZhUi, t } from '@/utils/i18n';
 
 /** 各 AI 提供商的默认 API 地址 */
 const DEFAULT_BASE_URLS: Record<string, string> = {
@@ -22,6 +23,14 @@ const DEFAULT_BASE_URLS: Record<string, string> = {
 
 /** 分类历史记录存储键 */
 const CLASSIFY_HISTORY_KEY = 'markpage_classify_history';
+
+/** AI 服务自抛的、已用 i18n 包装好用户友好文案的错误标记类 */
+class AIServiceError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AIServiceError';
+  }
+}
 
 /** 分类历史记录条目 */
 interface ClassifyHistoryEntry {
@@ -59,12 +68,15 @@ function buildClassifyPrompt(
   categories: Category[],
   history: ClassifyHistoryEntry[] = [],
 ): { role: string; content: string }[] {
+  const zh = isZhUi();
+
   // 序列化分类树为可读文本
   const categoryList = categories
     .map((c) => {
-      let line = `- ${c.name} (${c.count} 个书签)`;
+      const countLabel = (n: number) => zh ? `${n} 个书签` : `${n} bookmarks`;
+      let line = `- ${c.name} (${countLabel(c.count)})`;
       if (c.children && c.children.length > 0) {
-        const childLines = c.children.map((ch) => `  - ${ch.name} (${ch.count} 个书签)`);
+        const childLines = c.children.map((ch) => `  - ${ch.name} (${countLabel(ch.count)})`);
         line += '\n' + childLines.join('\n');
       }
       return line;
@@ -75,15 +87,18 @@ function buildClassifyPrompt(
   const recentHistory = history.slice(-20);
   let fewShotText = '';
   if (recentHistory.length > 0) {
+    const header = zh
+      ? '\n\n以下是用户之前确认的分类记录，作为参考：\n'
+      : '\n\nUser-confirmed classifications from earlier (as reference):\n';
     fewShotText =
-      '\n\n以下是用户之前确认的分类记录，作为参考：\n' +
+      header +
       recentHistory
         .map((h) => `- "${h.title}" (${h.url}) → ${h.category}`)
         .join('\n');
   }
 
-  // 系统 Prompt
-  const systemPrompt = `你是一个智能书签分类助手。你的任务是根据网页的标题和 URL，将书签归类到最合适的分类中。
+  if (zh) {
+    const systemPrompt = `你是一个智能书签分类助手。你的任务是根据网页的标题和 URL，将书签归类到最合适的分类中。
 
 规则：
 1. 优先使用用户已有的分类
@@ -91,6 +106,7 @@ function buildClassifyPrompt(
 3. 返回置信度（0-1 之间的小数）
 4. 提供 1-2 个备选分类
 5. 必须严格按照 JSON 格式返回结果
+6. 分类名与用户已有分类保持一致的语言（用户使用中文，新分类也用中文）
 
 输出格式（严格 JSON，不要包含任何其他文字）：
 {
@@ -105,8 +121,7 @@ function buildClassifyPrompt(
 
 如果建议新分类，将 newCategory 设为新分类名称。`;
 
-  // 用户 Prompt
-  const userPrompt = `请为以下书签分类：
+    const userPrompt = `请为以下书签分类：
 
 标题：${bookmark.title}
 URL：${bookmark.url}
@@ -115,6 +130,46 @@ URL：${bookmark.url}
 ${categoryList || '（暂无分类）'}${fewShotText}
 
 请返回 JSON 格式的分类结果。`;
+
+    return [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ];
+  }
+
+  // 英文环境
+  const systemPrompt = `You are a smart bookmark categorization assistant. Your job is to assign a bookmark to the most appropriate category, based on the page's title and URL.
+
+Rules:
+1. Prefer existing user categories
+2. If none of the existing categories fit, you may suggest creating a new one
+3. Return a confidence score (decimal between 0 and 1)
+4. Provide 1-2 alternative categories
+5. Output strictly in the JSON format below
+6. Match the language of the user's existing categories (English in → English out)
+
+Output format (strict JSON, no other text):
+{
+  "category": "recommended category name",
+  "confidence": 0.95,
+  "alternatives": [
+    { "category": "alternative 1", "confidence": 0.7 },
+    { "category": "alternative 2", "confidence": 0.5 }
+  ],
+  "newCategory": null
+}
+
+If you suggest a new category, set newCategory to its name.`;
+
+  const userPrompt = `Please categorize this bookmark:
+
+Title: ${bookmark.title}
+URL: ${bookmark.url}
+
+Current categories:
+${categoryList || '(none yet)'}${fewShotText}
+
+Return the JSON result.`;
 
   return [
     { role: 'system', content: systemPrompt },
@@ -145,11 +200,11 @@ async function callChatAPI(
   const baseUrl = config.baseUrl ?? DEFAULT_BASE_URLS[config.provider] ?? '';
 
   if (!baseUrl) {
-    throw new Error('API 地址未配置，请在设置中填写 API 地址');
+    throw new AIServiceError(t('ai_error_baseUrlMissing'));
   }
 
   if (!config.apiKey) {
-    throw new Error('API Key 未配置，请在设置中填写 API Key');
+    throw new AIServiceError(t('ai_error_apiKeyMissing'));
   }
 
   // 构建请求 header
@@ -202,13 +257,13 @@ async function callChatAPI(
     if (!response.ok) {
       const statusCode = response.status;
       if (statusCode === 401) {
-        throw new Error('API Key 无效或已过期，请检查设置');
+        throw new AIServiceError(t('ai_error_apiKeyInvalid'));
       } else if (statusCode === 429) {
-        throw new Error('API 调用频率超限，请稍后再试');
+        throw new AIServiceError(t('ai_error_rateLimited'));
       } else if (statusCode === 402 || statusCode === 403) {
-        throw new Error('API 额度不足或权限不足，请检查账户');
+        throw new AIServiceError(t('ai_error_quotaExhausted'));
       } else {
-        throw new Error(`API 请求失败 (HTTP ${statusCode})，请稍后重试`);
+        throw new AIServiceError(t('ai_error_httpFailed', [String(statusCode)]));
       }
     }
 
@@ -221,19 +276,17 @@ async function callChatAPI(
       '';
 
     if (!content) {
-      throw new Error('AI 返回了空内容，请重试');
+      throw new AIServiceError(t('ai_error_emptyResponse'));
     }
 
     return content;
   } catch (error) {
     if ((error as Error).name === 'AbortError') {
-      throw new Error('API 请求超时（10秒），请检查网络连接');
+      throw new AIServiceError(t('ai_error_timeout'));
     }
-    // 如果已经是我们包装过的错误，直接抛出
-    if ((error as Error).message.includes('API')) {
-      throw error;
-    }
-    throw new Error(`网络请求失败: ${(error as Error).message}`);
+    // 已用 i18n 包装好用户友好文案的错误原样向上抛
+    if (error instanceof AIServiceError) throw error;
+    throw new AIServiceError(t('ai_error_networkFailed', [(error as Error).message]));
   }
 }
 
@@ -314,7 +367,7 @@ function parseClassifyResponse(responseText: string): ClassifyResult {
     const parsed = JSON.parse(jsonStr);
 
     return {
-      category: parsed.category || '未分类',
+      category: parsed.category || (isZhUi() ? '未分类' : 'Uncategorized'),
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
       alternatives: Array.isArray(parsed.alternatives)
         ? parsed.alternatives.map((alt: { category?: string; confidence?: number }) => ({
@@ -326,7 +379,7 @@ function parseClassifyResponse(responseText: string): ClassifyResult {
     };
   } catch (error) {
     console.error('[MarkPage] 解析 AI 响应失败:', error, '原始文本:', responseText);
-    throw new Error('AI 返回的格式无法解析，请重试');
+    throw new AIServiceError(t('ai_error_parseFailed'));
   }
 }
 
@@ -365,7 +418,7 @@ export async function batchClassify(
       console.error(`[MarkPage] 批量分类第 ${i + 1}/${total} 项失败:`, error);
       // 分类失败时设置默认结果，继续处理下一个
       results.set(bookmark.id, {
-        category: '未分类',
+        category: isZhUi() ? '未分类' : 'Uncategorized',
         confidence: 0,
         alternatives: [],
       });

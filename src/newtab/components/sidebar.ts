@@ -24,8 +24,9 @@ import {
 import { batchSuggestTags, cleanupTagSuggest } from '@/services/tag-ai';
 import { renameTag, deleteTag, mergeTag, findTagIdByName } from '@/services/tags';
 import { getSettings } from '@/services/storage';
+import { openSettings } from './settings-drawer';
 import {
-  iconGlobe, iconStar, iconClock, iconSettings, iconAI, iconSparkle
+  iconGlobe, iconStar, iconClock, iconSettings, iconAI, iconChevron
 } from './icons';
 import {
   getCategoryIcon, getCategoryIconKey, setCustomIcon,
@@ -264,6 +265,9 @@ export function renderSidebar(
   // 异步获取常用和最近添加的真实数量
   updateNavCounts();
 
+  // 分类区块容器：把标题 + 列表包成一个块，用于精确锁定 hover 范围
+  const categoriesBlock = h('div', { class: 'sidebar-categories-block' });
+
   // 分类标签（右侧带"+"新增一级文件夹按钮）
   const label = h('div', {
     class: 'sidebar-section-label sidebar-section-label-with-action',
@@ -285,17 +289,25 @@ export function renderSidebar(
       showInlineToast(t('sidebar_createFolderFailed', [(error as Error).message]));
     }
   });
-  navSection.appendChild(label);
+  categoriesBlock.appendChild(label);
 
   // 分类列表（支持嵌套子分类）
   categories.forEach(cat => {
-    renderCategoryTree(navSection, cat, 0, sidebar, onNav);
+    renderCategoryTree(categoriesBlock, cat, 0, sidebar, onNav);
   });
+
+  navSection.appendChild(categoriesBlock);
 
   // —— 标签区块容器（异步填充） ——
   const tagsContainer = h('div', { class: 'sidebar-tags-container', 'data-tags-container': '1' });
   navSection.appendChild(tagsContainer);
   renderTagsSection(tagsContainer, sidebar, onNav);
+
+  // 用户在设置抽屉里改完 AI 配置后即时刷新标签区，
+  // 让"AI 未配置"的 tooltip / 灰态等依赖项随之同步。
+  document.addEventListener('markpage:settings-closed', () => {
+    void renderTagsSection(tagsContainer, sidebar, onNav);
+  });
 
   sidebar.appendChild(navSection);
 
@@ -349,10 +361,6 @@ async function renderTagsSection(
   try {
     container.innerHTML = '';
 
-    // 区块标题
-    const labelRow = h('div', { class: 'sidebar-section-label' }, t('sidebar_tagsLabel'));
-    container.appendChild(labelRow);
-
     // 加载标签定义 + 使用计数 + 设置
     const [defs, counts, settings, allBookmarks] = await Promise.all([
       getAllTagDefs(),
@@ -366,19 +374,25 @@ async function renderTagsSection(
       (bk) => !bk.tags || bk.tags.length === 0,
     );
 
-    // 空状态：仍要给出 AI 补标入口，让新用户能一键启动
+    // 区块标题（带右侧 AI 操作触发器）—— 取代以前底部的两个直白按钮
+    const labelRow = buildTagsSectionLabel({
+      container,
+      sidebar,
+      onNav,
+      defs,
+      counts,
+      allBookmarks,
+      untagged,
+      aiConfigured,
+    });
+    container.appendChild(labelRow);
+
+    // 空状态
     if (defs.length === 0) {
       const empty = h('div', {
         style: 'padding:8px 12px;font-size:12px;color:var(--text-4);line-height:1.5',
       }, t('sidebar_tagsEmpty'));
       container.appendChild(empty);
-
-      // 仅当存在未打标书签时显示 AI 补标按钮
-      if (untagged.length > 0) {
-        container.appendChild(
-          buildAIBatchButton(container, sidebar, onNav, untagged, defs.map((d) => d.name), aiConfigured),
-        );
-      }
       return;
     }
 
@@ -485,236 +499,336 @@ async function renderTagsSection(
       container.appendChild(toggleBtn);
     }
 
-    // "AI 补标全部"按钮（仅当存在未打标书签时显示）
-    if (untagged.length > 0) {
-      container.appendChild(
-        buildAIBatchButton(container, sidebar, onNav, untagged, defs.map((d) => d.name), aiConfigured),
-      );
-    }
-
-    // "AI 整理标签"按钮（标签数 ≥ 5 时才显示）
-    if (defs.length >= 5) {
-      container.appendChild(
-        buildAICleanupButton(container, sidebar, onNav, defs, counts),
-      );
-    }
+    // 注：AI 补标 / 整理标签 操作已收敛到 TAGS 标题右侧的 ✨▾ 触发器
   } catch (error) {
     console.error('[MarkPage] 渲染标签区块失败:', error);
   }
 }
 
-/**
- * 构建 "AI 补标全部" 按钮
- *
- * 点击后批量调用 AI 推荐标签，结果通过 ensureTag + setBookmarkTags 持久化。
- *
- * @param container - 标签区块容器（完成后重新渲染）
- * @param sidebar - 侧边栏根（用于再次渲染）
- * @param onNav - 导航回调（完成后跳到 'all' 触发列表重渲染）
- * @param untagged - 未打标书签
- * @param existingTagNames - 已有标签名（提示 AI 优先复用）
- * @returns 按钮元素
- */
-function buildAIBatchButton(
-  container: HTMLElement,
-  sidebar: HTMLElement,
-  onNav: NavCallback,
-  untagged: Bookmark[],
-  existingTagNames: string[],
-  aiConfigured = true,
-): HTMLElement {
-  const btn = h('button', {
-    class: 'sidebar-ai-btn',
-    style: 'margin-top:4px',
+/** 构建 TAGS 区块标题（含右侧 ✨▾ AI 操作触发器） */
+interface TagsLabelCtx {
+  container: HTMLElement;
+  sidebar: HTMLElement;
+  onNav: NavCallback;
+  defs: TagDef[];
+  counts: Record<string, number>;
+  allBookmarks: Bookmark[];
+  untagged: Bookmark[];
+  aiConfigured: boolean;
+}
+
+function buildTagsSectionLabel(ctx: TagsLabelCtx): HTMLElement {
+  const labelRow = h('div', {
+    class: 'sidebar-section-label sidebar-section-label-with-action',
   });
-  const total = untagged.length;
-  btn.innerHTML = `
-    <span style="width:14px;height:14px;display:flex;align-items:center">${iconSparkle(14)}</span>
-    ${t('sidebar_aiTagAll', [String(total)])}
+  const text = h('span', {}, t('sidebar_tagsLabel'));
+  labelRow.appendChild(text);
+
+  // 触发器按钮：仅当有书签或有标签时才显示（否则页面就一个空 TAGS 区，没必要给入口）
+  if (ctx.allBookmarks.length === 0 && ctx.defs.length === 0) {
+    return labelRow;
+  }
+
+  const trigger = h('button', {
+    class: 'sidebar-section-ai',
+    title: t('sidebar_tagsAITrigger'),
+    'aria-label': t('sidebar_tagsAITrigger'),
+  });
+  trigger.innerHTML = `
+    <span class="sai-spark">${ICON_LIBRARY.sparkles(11)}</span>
+    <span class="sai-text">${t('sidebar_tagsAITriggerLabel')}</span>
+    <span class="sai-caret">${iconChevron(10)}</span>
   `;
-  on(btn, 'click', async () => {
-    console.log('[MarkPage] AI 补标按钮点击，未打标书签数:', untagged.length);
-    // 实时读取设置：避免侧边栏渲染后用户才去配置 AI 时的闭包过期
-    const latest = await getSettings();
-    if (!latest.ai?.apiKey || !latest.ai?.model) {
-      showInlineToast(t('sidebar_configureAIFirst'));
-      return;
-    }
-    if ((btn as HTMLButtonElement).disabled) {
-      console.log('[MarkPage] 按钮已禁用，跳过');
-      return;
-    }
-    (btn as HTMLButtonElement).disabled = true;
-
-    try {
-      const settings = await getSettings();
-      if (!settings.ai?.apiKey) {
-        showInlineToast(t('sidebar_configureAIFirst'));
-        (btn as HTMLButtonElement).disabled = false;
-        return;
-      }
-      if (untagged.length === 0) {
-        showInlineToast(t('sidebar_noUntaggedBookmarks'));
-        (btn as HTMLButtonElement).disabled = false;
-        return;
-      }
-
-      const results = await batchSuggestTags(
-        untagged,
-        existingTagNames,
-        settings.ai,
-        (done, total2) => {
-          btn.innerHTML = `
-            <span style="width:14px;height:14px;display:flex;align-items:center">${iconSparkle(14)}</span>
-            ${t('sidebar_aiTaggingProgress', [String(done), String(total2)])}
-          `;
-        },
-      );
-
-      // 持久化结果：把每条推荐的标签名转成 ID 并写入
-      let writtenCount = 0;
-      let emptyCount = 0;
-      for (const [bkId, tagNames] of results.entries()) {
-        console.log('[MarkPage] AI 补标结果:', bkId, tagNames);
-        if (!tagNames.length) {
-          emptyCount++;
-          continue;
-        }
-        try {
-          const tagIds: string[] = [];
-          for (const name of tagNames) {
-            const id = await ensureTag(name);
-            tagIds.push(id);
-          }
-          await setBookmarkTags(bkId, tagIds);
-          writtenCount++;
-        } catch (err) {
-          console.error('[MarkPage] 写入书签标签失败:', bkId, err);
-        }
-      }
-
-      // 刷新侧边栏标签区 + 同步更新列表所有行的 chip
-      await renderTagsSection(container, sidebar, onNav);
-      const { refreshAllRowTags } = await import('./bookmark-list');
-      await refreshAllRowTags();
-
-      // 结果反馈
-      if (writtenCount > 0) {
-        showInlineToast(
-          emptyCount > 0
-            ? t('sidebar_aiTagResultPartial', [String(writtenCount), String(emptyCount)])
-            : t('sidebar_aiTagResult', [String(writtenCount)])
-        );
-      } else {
-        showInlineToast(t('sidebar_aiTagNoSuggestions'));
-      }
-    } catch (error) {
-      console.error('[MarkPage] AI 批量补标失败:', error);
-      showInlineToast(t('sidebar_aiTagFailed', [(error as Error).message]));
-      (btn as HTMLButtonElement).disabled = false;
-    }
+  on(trigger, 'click', (e: MouseEvent) => {
+    e.stopPropagation();
+    showTagsAIMenu(trigger, ctx);
   });
-  return btn;
+  labelRow.appendChild(trigger);
+  return labelRow;
+}
+
+/** 弹出 TAGS 区块的 AI 操作菜单（紧贴触发器右下角） */
+function showTagsAIMenu(anchor: HTMLElement, ctx: TagsLabelCtx): void {
+  document.querySelector('.tags-ai-menu')?.remove();
+
+  const menu = h('div', { class: 'tags-ai-menu' });
+
+  // 标记打开态：菜单挂在 document.body 上，鼠标移过去时
+  // 已脱离 .sidebar-tags-container hover 范围，需要靠 is-open 类
+  // 强制保持触发器可见
+  anchor.classList.add('is-open');
+  const dismiss = (): void => {
+    anchor.classList.remove('is-open');
+    menu.remove();
+  };
+
+  // —— 计算各菜单项的可用状态 ——
+  const hasBookmarks = ctx.allBookmarks.length > 0;
+  const enoughTags = ctx.defs.length >= 2;
+  const aiOK = ctx.aiConfigured;
+
+  const isRetagMode = ctx.untagged.length === 0;
+  const tagTargets = isRetagMode ? ctx.allBookmarks : ctx.untagged;
+  const tagLabel = isRetagMode
+    ? t('sidebar_aiMenuRetagAll')
+    : t('sidebar_aiMenuTagUntagged');
+
+  // 点击时即时校验 AI 配置（避免使用 ctx 缓存的过时 aiConfigured）
+  const guardAIConfigured = async (): Promise<boolean> => {
+    const fresh = await getSettings();
+    if (fresh.ai?.apiKey && fresh.ai?.model) return true;
+    showInlineToast(t('sidebar_configureAIFirst'));
+    void openSettings();
+    return false;
+  };
+
+  // —— 菜单项 1：补标 / 重新打标 ——
+  // AI 未配置不再禁用按钮，改为点击后引导去设置；只有"内容前置条件不满足"才置灰。
+  const tagDisabledReason = !hasBookmarks
+    ? t('sidebar_aiMenuDisabledNoBookmarks')
+    : '';
+  menu.appendChild(buildMenuItem({
+    label: tagLabel,
+    count: tagTargets.length,
+    disabled: !!tagDisabledReason,
+    title: tagDisabledReason || (!aiOK ? t('sidebar_aiMenuDisabledNoAI') : ''),
+    onClick: () => {
+      dismiss();
+      void (async () => {
+        if (!(await guardAIConfigured())) return;
+        void runAIBatchTagging(ctx, isRetagMode);
+      })();
+    },
+  }));
+
+  // —— 菜单项 2：整理标签 ——
+  const cleanupDisabledReason = !enoughTags
+    ? t('sidebar_aiMenuDisabledFewTags')
+    : '';
+  menu.appendChild(buildMenuItem({
+    label: t('sidebar_aiMenuOrganize'),
+    count: ctx.defs.length,
+    disabled: !!cleanupDisabledReason,
+    title: cleanupDisabledReason || (!aiOK ? t('sidebar_aiMenuDisabledNoAI') : ''),
+    onClick: () => {
+      dismiss();
+      void (async () => {
+        if (!(await guardAIConfigured())) return;
+        void runAITagCleanup(ctx);
+      })();
+    },
+  }));
+
+  document.body.appendChild(menu);
+
+  // 定位：紧贴触发器右下角，右侧空间不足则向左展开
+  const arect = anchor.getBoundingClientRect();
+  const mrect = menu.getBoundingClientRect();
+  let left = arect.right - mrect.width;
+  if (left < 8) left = arect.left;
+  let top = arect.bottom + 4;
+  if (top + mrect.height > window.innerHeight - 8) {
+    top = arect.top - mrect.height - 4;
+  }
+  menu.style.left = `${Math.max(8, left)}px`;
+  menu.style.top = `${Math.max(8, top)}px`;
+
+  // 点击外部关闭
+  const close = (e: MouseEvent) => {
+    if (!menu.contains(e.target as Node)) {
+      dismiss();
+      document.removeEventListener('mousedown', close, true);
+    }
+  };
+  setTimeout(() => document.addEventListener('mousedown', close, true), 0);
+}
+
+/** 构建一个菜单项（标签 + 计数 + disabled 状态） */
+function buildMenuItem(opts: {
+  label: string;
+  count?: number;
+  disabled?: boolean;
+  title?: string;
+  onClick: () => void;
+}): HTMLElement {
+  const item = h('button', { class: 'tam-item', type: 'button' }) as HTMLButtonElement;
+  if (opts.disabled) item.disabled = true;
+  if (opts.title) item.title = opts.title;
+  item.innerHTML = `
+    <span class="tam-label">${escapeHtml(opts.label)}</span>
+    ${opts.count !== undefined ? `<span class="tam-count">${opts.count}</span>` : ''}
+  `;
+  if (!opts.disabled) {
+    on(item, 'click', (e: MouseEvent) => {
+      e.stopPropagation();
+      opts.onClick();
+    });
+  }
+  return item;
 }
 
 /**
- * 构建 "AI 整理标签" 按钮
+ * 执行 AI 批量打标
  *
- * 点击后调用 AI 分析标签列表，给出合并/删除建议，
- * 弹窗让用户确认后执行
- *
- * @param container - 标签区块容器（完成后重新渲染）
- * @param sidebar - 侧边栏根
- * @param onNav - 导航回调
- * @param defs - 现有标签定义
- * @param counts - 标签使用次数映射
+ * 复用原 buildAIBatchButton 的核心逻辑，但与 UI 解耦，可由菜单项调用。
+ * 进度通过 toast 反馈而不是替换按钮文本。
  */
-function buildAICleanupButton(
-  container: HTMLElement,
-  sidebar: HTMLElement,
-  onNav: NavCallback,
-  defs: TagDef[],
-  counts: Record<string, number>,
-): HTMLElement {
-  const btn = h('button', {
-    class: 'sidebar-ai-btn',
-    style: 'margin-top:2px',
-  });
-  btn.innerHTML = `
-    <span style="width:14px;height:14px;display:flex;align-items:center">${ICON_LIBRARY.sparkles(14)}</span>
-    ${t('sidebar_organizeTags')}
-    <span style="margin-left:auto;font-size:9px;font-weight:600;letter-spacing:0.04em;color:var(--text-4);border:1px solid var(--border);border-radius:3px;padding:0 4px;line-height:16px">AI</span>
-  `;
-  on(btn, 'click', async () => {
-    if ((btn as HTMLButtonElement).disabled) return;
-    (btn as HTMLButtonElement).disabled = true;
+async function runAIBatchTagging(ctx: TagsLabelCtx, isRetagMode: boolean): Promise<void> {
+  const targets = isRetagMode ? ctx.allBookmarks : ctx.untagged;
+  if (targets.length === 0) {
+    showInlineToast(t('sidebar_noUntaggedBookmarks'));
+    return;
+  }
 
-    try {
-      const settings = await getSettings();
-      if (!settings.ai?.apiKey) {
-        showInlineToast(t('sidebar_configureAIFirst'));
-        (btn as HTMLButtonElement).disabled = false;
-        return;
+  const settings = await getSettings();
+  if (!settings.ai?.apiKey || !settings.ai?.model) {
+    showInlineToast(t('sidebar_configureAIFirst'));
+    return;
+  }
+
+  // 重新打标不可逆，二次确认
+  if (isRetagMode) {
+    if (!window.confirm(t('sidebar_aiRetagConfirm', [String(targets.length)]))) return;
+  }
+
+  // 持久化进度 toast
+  const progressToast = showStickyToast(
+    t('sidebar_aiTaggingProgress', ['0', String(targets.length)]),
+  );
+
+  try {
+    const existingTagNames = ctx.defs.map((d) => d.name);
+    const results = await batchSuggestTags(
+      targets,
+      existingTagNames,
+      settings.ai,
+      (done, total) => {
+        progressToast.update(
+          t('sidebar_aiTaggingProgress', [String(done), String(total)]),
+        );
+      },
+    );
+
+    let writtenCount = 0;
+    let emptyCount = 0;
+    for (const [bkId, tagNames] of results.entries()) {
+      if (!tagNames.length) {
+        emptyCount++;
+        continue;
       }
-
-      btn.innerHTML = `
-        <span style="width:14px;height:14px;display:flex;align-items:center">${ICON_LIBRARY.sparkles(14)}</span>
-        ${t('sidebar_aiAnalyzing')}
-      `;
-
-      const tagList = defs.map((d) => ({ name: d.name, count: counts[d.id] ?? 0 }));
-      const suggestion = await cleanupTagSuggest(tagList, settings.ai);
-
-      // 即使首次为空，也打开弹窗让用户输入方向后重新分析
-      const confirmed = await showCleanupDialog(
-        suggestion,
-        async (userDirection) => cleanupTagSuggest(tagList, settings.ai, userDirection),
-      );
-      if (!confirmed) {
-        (btn as HTMLButtonElement).disabled = false;
-        await renderTagsSection(container, sidebar, onNav);
-        return;
-      }
-
-      // 执行合并（target 不存在时自动创建，支持把零散标签归入新大类）
-      for (const group of confirmed.merges) {
-        const targetId = await ensureTag(group.target);
-        for (const srcName of group.sources) {
-          const srcId = await findTagIdByName(srcName);
-          if (srcId && srcId !== targetId) {
-            try {
-              await mergeTag(srcId, targetId);
-            } catch (error) {
-              console.error('[MarkPage] 合并标签失败:', srcName, '→', group.target, error);
-            }
-          }
+      try {
+        const tagIds: string[] = [];
+        for (const name of tagNames) {
+          const id = await ensureTag(name);
+          tagIds.push(id);
         }
+        await setBookmarkTags(bkId, tagIds);
+        writtenCount++;
+      } catch (err) {
+        console.error('[MarkPage] 写入书签标签失败:', bkId, err);
       }
-
-      // 执行删除
-      for (const item of confirmed.deletes) {
-        const id = await findTagIdByName(item.name);
-        if (id) {
-          try {
-            await deleteTag(id);
-          } catch (error) {
-            console.error('[MarkPage] 删除标签失败:', item.name, error);
-          }
-        }
-      }
-
-      // 刷新 UI
-      await renderTagsSection(container, sidebar, onNav);
-      const { refreshAllRowTags } = await import('./bookmark-list');
-      await refreshAllRowTags();
-      showInlineToast(t('sidebar_tagsOrganized'));
-    } catch (error) {
-      console.error('[MarkPage] AI 整理标签失败:', error);
-      showInlineToast(t('sidebar_organizeFailed', [(error as Error).message]));
-      (btn as HTMLButtonElement).disabled = false;
     }
+
+    progressToast.dismiss();
+
+    await renderTagsSection(ctx.container, ctx.sidebar, ctx.onNav);
+    const { refreshAllRowTags } = await import('./bookmark-list');
+    await refreshAllRowTags();
+
+    if (writtenCount > 0) {
+      showInlineToast(
+        emptyCount > 0
+          ? t('sidebar_aiTagResultPartial', [String(writtenCount), String(emptyCount)])
+          : t('sidebar_aiTagResult', [String(writtenCount)]),
+      );
+    } else {
+      showInlineToast(t('sidebar_aiTagNoSuggestions'));
+    }
+  } catch (error) {
+    progressToast.dismiss();
+    console.error('[MarkPage] AI 批量补标失败:', error);
+    showInlineToast(t('sidebar_aiTagFailed', [(error as Error).message]));
+  }
+}
+
+/**
+ * 执行 AI 整理标签流程
+ *
+ * 复用原 buildAICleanupButton 的核心逻辑，但与 UI 解耦。
+ */
+async function runAITagCleanup(ctx: TagsLabelCtx): Promise<void> {
+  const settings = await getSettings();
+  if (!settings.ai?.apiKey) {
+    showInlineToast(t('sidebar_configureAIFirst'));
+    return;
+  }
+
+  const analyzingToast = showStickyToast(t('sidebar_aiAnalyzing'));
+  try {
+    const tagList = ctx.defs.map((d) => ({ name: d.name, count: ctx.counts[d.id] ?? 0 }));
+    const suggestion = await cleanupTagSuggest(tagList, settings.ai);
+    analyzingToast.dismiss();
+
+    const confirmed = await showCleanupDialog(
+      suggestion,
+      async (userDirection) => cleanupTagSuggest(tagList, settings.ai, userDirection),
+    );
+    if (!confirmed) {
+      await renderTagsSection(ctx.container, ctx.sidebar, ctx.onNav);
+      return;
+    }
+
+    for (const group of confirmed.merges) {
+      const targetId = await ensureTag(group.target);
+      for (const srcName of group.sources) {
+        const srcId = await findTagIdByName(srcName);
+        if (srcId && srcId !== targetId) {
+          try {
+            await mergeTag(srcId, targetId);
+          } catch (error) {
+            console.error('[MarkPage] 合并标签失败:', srcName, '→', group.target, error);
+          }
+        }
+      }
+    }
+
+    for (const item of confirmed.deletes) {
+      const id = await findTagIdByName(item.name);
+      if (id) {
+        try {
+          await deleteTag(id);
+        } catch (error) {
+          console.error('[MarkPage] 删除标签失败:', item.name, error);
+        }
+      }
+    }
+
+    await renderTagsSection(ctx.container, ctx.sidebar, ctx.onNav);
+    const { refreshAllRowTags } = await import('./bookmark-list');
+    await refreshAllRowTags();
+    showInlineToast(t('sidebar_tagsOrganized'));
+  } catch (error) {
+    analyzingToast.dismiss();
+    console.error('[MarkPage] AI 整理标签失败:', error);
+    showInlineToast(t('sidebar_organizeFailed', [(error as Error).message]));
+  }
+}
+
+/**
+ * 显示常驻进度 toast，可手动 update 文本或 dismiss
+ *
+ * 用于长任务（AI 批量打标、整理标签等）的视觉反馈。
+ */
+function showStickyToast(initialMsg: string): { update: (msg: string) => void; dismiss: () => void } {
+  const toast = h('div', {
+    style: 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:8px 14px;background:var(--bg-1);border:1px solid var(--border-strong);border-radius:6px;color:var(--text-1);font-family:var(--font);font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:3000;display:flex;align-items:center;gap:8px',
   });
-  return btn;
+  toast.textContent = initialMsg;
+  document.body.appendChild(toast);
+  return {
+    update: (msg) => { toast.textContent = msg; },
+    dismiss: () => toast.remove(),
+  };
 }
 
 /**

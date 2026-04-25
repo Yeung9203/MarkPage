@@ -15,8 +15,7 @@ import type { Bookmark, Category, TagDef } from '@/types';
 import { iconChevron, iconMore } from './icons';
 import { showContextMenu } from './context-menu';
 import { getAllTagDefs } from '@/services/tags';
-import { getFrequentIds } from '@/services/storage';
-import { getCategoryIcon } from './category-icons';
+import { getFrequentIds, saveRecentVisit } from '@/services/storage';
 import { showTagPopover } from './tag-popover';
 import { t } from '@/utils/i18n';
 
@@ -73,6 +72,28 @@ const bookmarkColorMap: Record<string, { color: string; letter: string }> = {
 };
 
 /**
+ * 从标题中提取首个"有效字符"作为头像文字
+ *
+ * 规则：按 Unicode code point 遍历，跳过空白、标点、符号、emoji 等，
+ * 返回第一个 Letter / Number 字符。这样能正确处理：
+ *   - 前导空格："  Google Gemini" → "G"
+ *   - 前导 emoji："🪐 Gemini"      → "G"
+ *   - 中文括号："【南京鑫学城】..."  → "南"
+ *   - 不可见字符（U+FEFF、零宽空格等） → 跳过
+ *
+ * @param title - 原始标题
+ * @returns 单字符（中文一字 / 拉丁字母大写 / 数字）；找不到时返回 "#"
+ */
+function extractFirstLetter(title: string): string {
+  // Array.from 按 code point 拆分，避免 emoji 高低代理被截断成半字符
+  for (const ch of Array.from(title)) {
+    // \p{L}: Unicode Letter（含中日韩文）；\p{N}: Number
+    if (/^[\p{L}\p{N}]$/u.test(ch)) return ch.toUpperCase();
+  }
+  return '#';
+}
+
+/**
  * 获取书签的颜色和字母
  *
  * @param title - 书签标题
@@ -88,7 +109,7 @@ function getBookmarkStyle(title: string): { color: string; letter: string } {
   }
   return {
     color: colors[Math.abs(hash) % colors.length],
-    letter: title.charAt(0).toUpperCase(),
+    letter: extractFirstLetter(title),
   };
 }
 
@@ -164,8 +185,7 @@ export async function renderBookmarkList(
       draggable: 'true',
     });
 
-    // 分组头（图标与侧边栏分类保持一致：优先使用用户自定义 icon）
-    const iconHtml = getCategoryIcon(categoryName);
+    // 分组头：仅保留 chevron + 名称 + 计数；分类图标已移除（视觉层级靠 typography）
     const groupHeader = h('div', {
       class: 'group-header',
       'data-cat': categoryName,
@@ -173,7 +193,6 @@ export async function renderBookmarkList(
 
     groupHeader.innerHTML = `
       <span class="group-chevron">${iconChevron()}</span>
-      <span class="group-icon">${iconHtml}</span>
       <span class="group-name">${categoryName}</span>
       <span class="group-count">${groupBookmarks.length}</span>
     `;
@@ -247,12 +266,14 @@ export async function renderBookmarkList(
       // 点击行打开链接：默认在当前标签页，按住 Cmd/Ctrl/中键则新开
       on(row, 'click', (e) => {
         if ((e.target as HTMLElement).closest('.bk-act')) return;
+        void saveRecentVisit(bk);
         openLink(bk.url, e as MouseEvent);
       });
       on(row, 'auxclick', (e) => {
         if ((e as MouseEvent).button !== 1) return;
         if ((e.target as HTMLElement).closest('.bk-act')) return;
         e.preventDefault();
+        void saveRecentVisit(bk);
         window.open(bk.url, '_blank');
       });
 
@@ -546,13 +567,17 @@ function initGroupDragSort(container: HTMLElement): void {
 // 标签 Chip 渲染与筛选条
 // ============================================================
 
+/** 单个书签允许的最大标签数 */
+const MAX_TAGS_PER_BOOKMARK = 3;
+
 /**
  * 渲染某行的标签 chips
  *
  * 规则：
- *   - 0 个：显示占位 `+`（点击唤起 Popover）
- *   - 1 个 / 2 个：逐个 chip
- *   - ≥3 个：前 2 个 + "+N"（title 显示全部）
+ *   - 0 个：显示虚线 `+` 占位（点击唤起 Popover）
+ *   - 1~2 个：逐个 chip + 末尾紧凑 `+` 添加按钮
+ *   - 3 个（已达上限）：3 个 chip，不再显示 `+`
+ *   - 历史数据 >3：前 2 个 chip + "+N"（点击进 Popover 整理）
  *
  * @param cell - 标签单元格 span
  * @param bk - 书签
@@ -577,7 +602,7 @@ function renderTagChips(
   const ids = bk.tags ?? [];
   const names = ids.map((id) => tagNameMap.get(id)).filter((n): n is string => !!n);
 
-  // 空态：占位按钮
+  // 空态：虚线占位按钮
   if (names.length === 0) {
     const placeholder = document.createElement('button');
     placeholder.type = 'button';
@@ -614,13 +639,11 @@ function renderTagChips(
     return;
   }
 
-  const visible = names.slice(0, 2);
-  visible.forEach((name, idx) => {
-    const chip = makeChip(name, ids[idx]);
-    cell.appendChild(chip);
-  });
-
-  if (names.length > 2) {
+  // 历史数据 >3 个标签：兼容显示前 2 + 溢出
+  if (names.length > MAX_TAGS_PER_BOOKMARK) {
+    names.slice(0, 2).forEach((name, idx) => {
+      cell.appendChild(makeChip(name, ids[idx]));
+    });
     const overflow = document.createElement('span');
     const restCount = names.length - 2;
     overflow.textContent = `+${restCount}`;
@@ -629,7 +652,8 @@ function renderTagChips(
       height: '18px',
       padding: '0 6px',
       borderRadius: '4px',
-      background: 'var(--bg-3)',
+      // 灰阶降一档：把 bg-3 与背景以 45/55 混合，让 chip 看起来"轻得多"
+      background: 'color-mix(in srgb, var(--bg-3) 45%, transparent)',
       color: 'var(--text-2)',
       fontSize: '10px',
       fontWeight: '500',
@@ -645,6 +669,54 @@ function renderTagChips(
       });
     });
     cell.appendChild(overflow);
+    return;
+  }
+
+  // 正常情况（1~3 个）：每个 chip 都渲染
+  names.forEach((name, idx) => {
+    cell.appendChild(makeChip(name, ids[idx]));
+  });
+
+  // 未达上限：尾部追加紧凑 `+` 添加按钮（默认隐藏，行 hover 时浮出）
+  if (names.length < MAX_TAGS_PER_BOOKMARK) {
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.textContent = '+';
+    addBtn.title = t('bk_addTagTitle');
+    addBtn.className = 'bk-tag-add';
+    Object.assign(addBtn.style, {
+      width: '18px',
+      height: '18px',
+      padding: '0',
+      borderRadius: '4px',
+      background: 'transparent',
+      border: '1px dashed var(--border)',
+      color: 'var(--text-4)',
+      fontSize: '12px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      lineHeight: '1',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: '0',
+      transition: 'all var(--fast)',
+    } as CSSStyleDeclaration);
+    addBtn.addEventListener('mouseenter', () => {
+      addBtn.style.color = 'var(--text-2)';
+      addBtn.style.borderColor = 'var(--border-strong)';
+    });
+    addBtn.addEventListener('mouseleave', () => {
+      addBtn.style.color = 'var(--text-4)';
+      addBtn.style.borderColor = 'var(--border)';
+    });
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showTagPopover(addBtn, bk, () => {
+        refreshRowTags(cell.closest('.bk-row') as HTMLElement, bk, tagNameMap);
+      });
+    });
+    cell.appendChild(addBtn);
   }
 }
 
@@ -664,7 +736,8 @@ function makeChip(name: string, tagId: string): HTMLElement {
     height: '18px',
     padding: '0 6px',
     borderRadius: '4px',
-    background: 'var(--bg-3)',
+    // 灰阶降一档：把 bg-3 与背景以 45/55 混合，让 chip 看起来"轻得多"
+    background: 'color-mix(in srgb, var(--bg-3) 45%, transparent)',
     color: 'var(--text-2)',
     fontSize: '10px',
     fontWeight: '500',
@@ -678,11 +751,12 @@ function makeChip(name: string, tagId: string): HTMLElement {
     whiteSpace: 'nowrap',
     transition: 'background var(--fast)',
   } as CSSStyleDeclaration);
+  // hover 升到原 bg-3 全色：默认越浅，hover 反差才明显，"可点"信号清晰
   chip.addEventListener('mouseenter', () => {
-    chip.style.background = 'var(--bg-hover)';
+    chip.style.background = 'var(--bg-3)';
   });
   chip.addEventListener('mouseleave', () => {
-    chip.style.background = 'var(--bg-3)';
+    chip.style.background = 'color-mix(in srgb, var(--bg-3) 45%, transparent)';
   });
   chip.addEventListener('click', (e) => {
     e.stopPropagation();

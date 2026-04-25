@@ -106,9 +106,43 @@ export function renderSettingsDrawer(): HTMLElement {
       updateSettings({
         ai: { provider: selected.provider, model: selected.model } as any,
       });
+      toggleCustomFields(selected.provider === 'custom');
     }
   });
   aiCard.appendChild(providerSelect);
+
+  // 自定义服务商专用字段：Base URL + Model（仅 provider=custom 时显示）
+  const customFields = h('div', {
+    id: 'sdCustomFields',
+    style: 'display:none;flex-direction:column;gap:6px;margin-bottom:6px',
+  });
+
+  const baseUrlInput = document.createElement('input');
+  baseUrlInput.className = 'setting-input';
+  baseUrlInput.id = 'sdBaseUrlInput';
+  baseUrlInput.type = 'text';
+  baseUrlInput.placeholder = t('settings_ai_baseurl_placeholder');
+  baseUrlInput.style.cssText = 'width:100%;padding:8px 10px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-2);border:1px solid var(--border);border-radius:6px;outline:none';
+  on(baseUrlInput, 'blur', () => {
+    // 去除尾部斜杠，避免 ${baseUrl}/chat/completions 拼出双斜杠
+    const cleaned = baseUrlInput.value.trim().replace(/\/+$/, '');
+    if (cleaned !== baseUrlInput.value) baseUrlInput.value = cleaned;
+    updateSettings({ ai: { baseUrl: cleaned } as any });
+  });
+  customFields.appendChild(baseUrlInput);
+
+  const modelInput = document.createElement('input');
+  modelInput.className = 'setting-input';
+  modelInput.id = 'sdModelInput';
+  modelInput.type = 'text';
+  modelInput.placeholder = t('settings_ai_model_placeholder');
+  modelInput.style.cssText = 'width:100%;padding:8px 10px;font-family:var(--font);font-size:12px;color:var(--text-1);background:var(--bg-2);border:1px solid var(--border);border-radius:6px;outline:none';
+  on(modelInput, 'blur', () => {
+    updateSettings({ ai: { model: modelInput.value.trim() } as any });
+  });
+  customFields.appendChild(modelInput);
+
+  aiCard.appendChild(customFields);
 
   // API Key 输入
   const apiKeyInput = document.createElement('input');
@@ -311,6 +345,16 @@ export function renderSettingsDrawer(): HTMLElement {
   drawerEl.appendChild(body);
 
   return drawerEl;
+}
+
+/**
+ * 切换自定义服务商专用字段（Base URL / Model）的可见性
+ *
+ * @param show - 是否显示
+ */
+function toggleCustomFields(show: boolean): void {
+  const wrap = document.getElementById('sdCustomFields');
+  if (wrap) wrap.style.display = show ? 'flex' : 'none';
 }
 
 /**
@@ -598,6 +642,13 @@ export async function openSettings(): Promise<void> {
       if (idx >= 0) providerSelect.value = String(idx);
     }
 
+    // 回填 Base URL / Model 并按 provider 切换可见性
+    const baseUrlInput = document.getElementById('sdBaseUrlInput') as HTMLInputElement | null;
+    if (baseUrlInput) baseUrlInput.value = settings.ai.baseUrl ?? '';
+    const modelInput = document.getElementById('sdModelInput') as HTMLInputElement | null;
+    if (modelInput) modelInput.value = settings.ai.model ?? '';
+    toggleCustomFields(settings.ai.provider === 'custom');
+
     // 回填 API Key
     const apiKeyInput = document.getElementById('sdApiKeyInput') as HTMLInputElement;
     if (apiKeyInput) {
@@ -667,9 +718,16 @@ function fillToggle(toggleId: string, isOn: boolean): void {
 
 /**
  * 关闭设置抽屉
+ *
+ * 关闭时派发 `markpage:settings-closed` 事件，便于侧边栏等订阅方
+ * 在用户改完 AI 配置后即时刷新依赖该配置的 UI（如 tooltip）。
  */
 export function closeSettings(): void {
+  const wasOpen = !!drawerEl?.classList.contains('open');
   if (drawerEl) drawerEl.classList.remove('open');
+  if (wasOpen) {
+    document.dispatchEvent(new CustomEvent('markpage:settings-closed'));
+  }
 }
 
 /**
