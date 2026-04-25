@@ -88,6 +88,17 @@ MarkPage's AI features (auto-tagging, categorization, tag cleanup) require an Op
 
 > Your API key is stored only in local `chrome.storage.local`. Nothing is uploaded to any server.
 
+## Changelog
+
+### v1.0.0
+
+- ✨ **AI on by default** — Newly bookmarked pages are auto-categorized out of the box, no setup required
+- ✨ **Custom AI endpoint** — Configure any OpenAI-compatible Base URL (DeepSeek, Zhipu, local models, etc.)
+- ✨ **Tag suggestions in Popup** — Live AI tag suggestions when bookmarking, add or remove with one click
+- 🐛 **Fixed AI tagging reliability** — Resolved tag-write failures and stale-closure issues in edge cases
+- 💎 **Visual polish** — Sidebar logo aligned with menu text; refined styles across popup, header, tags, etc.
+- 🌐 **Better i18n** — AI prompts now switch between Chinese/English based on UI language; many translation strings added
+
 ## Tech Stack
 
 - TypeScript + Vite
