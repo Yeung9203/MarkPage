@@ -296,8 +296,9 @@ async function startRealAnalysis(stream: HTMLElement | null, settings: Awaited<R
 
       const currentCategory = bookmark.category || '未分类';
 
-      // 只显示分类发生变化的书签
-      if (result.category !== currentCategory && result.confidence > 0.5) {
+      // 只显示分类发生变化、且 AI 有较高把握的书签
+      // 0.7 阈值：避免低置信度的"猜分类"被当成移动建议（旧 0.5 太松，会出现 x.com → Developer 这类硬塞）
+      if (result.category !== currentCategory && result.confidence >= 0.7) {
         // 收集新分类
         if (result.newCategory) {
           newCategories.add(result.newCategory);

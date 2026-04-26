@@ -49,14 +49,28 @@ interface ClassifyHistoryEntry {
 // ============================================================
 
 /**
+ * 从 URL 提取主机名（用于在 prompt 中给 AI 提供更显式的语义线索）
+ *
+ * @param url - 完整 URL
+ * @returns hostname，解析失败返回原 url
+ */
+function extractHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
+/**
  * 构建 AI 分类的 Prompt
  *
  * 包含以下内容：
- *   1. 系统角色描述（书签分类助手）
+ *   1. 系统角色描述（书签分类助手 + 反"硬塞已有分类"指引）
  *   2. 用户分类树（已有分类列表）
  *   3. few-shot 样本（最近用户确认的分类记录）
- *   4. 待分类的网页信息（title + URL）
- *   5. 输出格式约定（JSON）
+ *   4. 待分类的网页信息（title + URL + host）
+ *   5. 输出格式约定（JSON，含 reasoning 字段强制简短推理）
  *
  * @param bookmark - 书签信息
  * @param categories - 已有分类列表
@@ -69,6 +83,7 @@ function buildClassifyPrompt(
   history: ClassifyHistoryEntry[] = [],
 ): { role: string; content: string }[] {
   const zh = isZhUi();
+  const host = extractHost(bookmark.url);
 
   // 序列化分类树为可读文本
   const categoryList = categories
@@ -88,8 +103,8 @@ function buildClassifyPrompt(
   let fewShotText = '';
   if (recentHistory.length > 0) {
     const header = zh
-      ? '\n\n以下是用户之前确认的分类记录，作为参考：\n'
-      : '\n\nUser-confirmed classifications from earlier (as reference):\n';
+      ? '\n\n以下是用户之前确认的分类记录，作为参考（仅供参考，不要盲从）：\n'
+      : '\n\nUser-confirmed classifications from earlier (reference only, do not blindly follow):\n';
     fewShotText =
       header +
       recentHistory
@@ -98,35 +113,58 @@ function buildClassifyPrompt(
   }
 
   if (zh) {
-    const systemPrompt = `你是一个智能书签分类助手。你的任务是根据网页的标题和 URL，将书签归类到最合适的分类中。
+    const systemPrompt = `你是一个严谨的书签分类助手。你的任务是根据网页的"标题 + URL（特别是域名）"判断它的真实用途，并归入最贴切的分类。
 
-规则：
-1. 优先使用用户已有的分类
-2. 如果没有合适的已有分类，可以建议创建新分类
-3. 返回置信度（0-1 之间的小数）
-4. 提供 1-2 个备选分类
-5. 必须严格按照 JSON 格式返回结果
-6. 分类名与用户已有分类保持一致的语言（用户使用中文，新分类也用中文）
+判断流程（必须按顺序思考）：
+1. 先看标题里的"品牌名"，再看 URL 域名（host）——两者结合判断网站的核心用途。这是最重要的依据。
+2. 检查已有分类列表，**仅当**已有分类的语义和该网站的核心用途明确吻合时，才复用它。
+3. 如果所有已有分类都对不上，**必须**通过 newCategory 字段建议一个新分类，**绝不要为了"用上已有分类"而硬塞**。
+4. 输出前自检：相似产品（如同样是 AI 助手的 ChatGPT 和 Claude）应当归到**同一类**——若 few-shot 中已有此类先例，必须保持一致。
 
-输出格式（严格 JSON，不要包含任何其他文字）：
+【品牌词 → 类别】（标题里出现这些词，几乎一定属于对应类别，**优先级高于域名**）：
+- AI 工具：ChatGPT / Claude / Gemini / Bard / Copilot / Perplexity / Kimi / 通义 / 文心 / Grok / DeepSeek / Midjourney / DALL·E / Stable Diffusion / Runway / Sora / Suno
+- 设计工具：Figma / Sketch / Framer / Adobe XD / Canva / Photoshop / Illustrator
+- 开发：GitHub / GitLab / Stack Overflow / npm / MDN / VSCode / 掘金（juejin）
+- 视频/影音：YouTube / Bilibili / Netflix / 优酷 / 爱奇艺 / Twitch
+- 社交媒体：X / Twitter / 微博 / 小红书 / Threads / Instagram / Facebook / TikTok / 抖音
+- 社区论坛：Reddit / V2EX / Hacker News / 贴吧 / Quora
+- 邮箱：Gmail / Outlook / QQ 邮箱 / 网易邮箱 / Inbox
+- 生产力：Notion / Linear / Asana / Trello / 飞书 / 钉钉 / Slack
+- 云服务：AWS / Azure / GCP / Vercel / Netlify / Cloudflare / 腾讯云 / 阿里云
+
+【常见误判，避免】：
+- "ChatGPT / Claude" 中的 "Chat" 不是"聊天娱乐"，它们是 **AI 工具**。
+- "YouTube Music"、"Spotify" 是音乐，不是视频。
+- "Linear"（项目管理）不是"线性代数"也不是开发工具，是**生产力**。
+- "Discord" 是社交/社区，不是开发。
+- 个人博客 / 教程文章 不要因为"标题含技术词"就塞到 Developer——它们应是"学习资源"或"博客"。
+
+硬性规则：
+- 不要因为"已有分类里数量最多"或"已有分类里没有更合适的"就硬塞——这种情况一律 newCategory。
+- confidence 表示"分到这一类的把握"：勉强、不确定时给 0.4 以下，明显合适给 0.85 以上。
+- 分类名与用户使用语言一致（用户用中文则中文、英文则英文）。
+- 严格输出 JSON，不要包含任何额外文字。
+
+输出格式：
 {
+  "reasoning": "一句话说明为什么分到这一类（≤30 字，关键看品牌词/域名）",
   "category": "推荐的分类名称",
   "confidence": 0.95,
   "alternatives": [
-    { "category": "备选分类1", "confidence": 0.7 },
-    { "category": "备选分类2", "confidence": 0.5 }
+    { "category": "备选分类1", "confidence": 0.7 }
   ],
   "newCategory": null
 }
 
-如果建议新分类，将 newCategory 设为新分类名称。`;
+如果建议新分类，把 category 设为新名称，并把 newCategory 也设为同一名称。`;
 
-    const userPrompt = `请为以下书签分类：
+    const userPrompt = `请为以下书签分类。先看域名判断核心用途，再决定是复用已有分类还是建议新分类。
 
 标题：${bookmark.title}
 URL：${bookmark.url}
+域名：${host}
 
-当前已有的分类列表：
+当前已有的分类列表（数量越多 ≠ 越合适，看语义是否吻合）：
 ${categoryList || '（暂无分类）'}${fewShotText}
 
 请返回 JSON 格式的分类结果。`;
@@ -138,35 +176,58 @@ ${categoryList || '（暂无分类）'}${fewShotText}
   }
 
   // 英文环境
-  const systemPrompt = `You are a smart bookmark categorization assistant. Your job is to assign a bookmark to the most appropriate category, based on the page's title and URL.
+  const systemPrompt = `You are a rigorous bookmark categorization assistant. Decide a bookmark's true purpose from its title and URL (especially the host), then place it in the best-fitting category.
 
-Rules:
-1. Prefer existing user categories
-2. If none of the existing categories fit, you may suggest creating a new one
-3. Return a confidence score (decimal between 0 and 1)
-4. Provide 1-2 alternative categories
-5. Output strictly in the JSON format below
-6. Match the language of the user's existing categories (English in → English out)
+Decision process (follow in order):
+1. First scan the title for a brand name; then read the URL host. Together they reveal the site's core purpose — this is the primary signal.
+2. Check the existing categories. Only reuse one when its semantics CLEARLY match the site's core purpose.
+3. If no existing category fits, you MUST propose a new one via newCategory. Never force-fit just to reuse an existing folder.
+4. Self-check before answering: similar products (e.g., ChatGPT and Claude are both AI assistants) MUST land in the SAME category. If the few-shot history already classified one, stay consistent.
 
-Output format (strict JSON, no other text):
+[Brand name → category] (when these appear in the title, they almost certainly belong to the listed category — overrides host hints):
+- AI Tools: ChatGPT / Claude / Gemini / Bard / Copilot / Perplexity / Kimi / Grok / DeepSeek / Midjourney / DALL·E / Stable Diffusion / Runway / Sora / Suno
+- Design Tools: Figma / Sketch / Framer / Adobe XD / Canva / Photoshop / Illustrator
+- Developer: GitHub / GitLab / Stack Overflow / npm / MDN / VSCode
+- Video / Entertainment: YouTube / Bilibili / Netflix / Twitch
+- Social: X / Twitter / Threads / Instagram / Facebook / TikTok
+- Community: Reddit / Hacker News / Quora / V2EX
+- Email: Gmail / Outlook / Inbox
+- Productivity: Notion / Linear / Asana / Trello / Slack
+- Cloud: AWS / Azure / GCP / Vercel / Netlify / Cloudflare
+
+[Common pitfalls to avoid]:
+- "Chat" in "ChatGPT" / "Claude" does NOT mean "chat entertainment" — they are AI Tools.
+- "YouTube Music" / "Spotify" → Music, not Video.
+- "Linear" (project management) is NOT linear-algebra or a dev tool — it's Productivity.
+- "Discord" is Social/Community, not Developer.
+- A personal blog or tutorial article should NOT be force-fitted to Developer just because the title contains a tech term — use Learning/Blog instead.
+
+Hard rules:
+- Don't force-fit because "the existing categories have the most items there" or "nothing else is closer." In that case, propose newCategory.
+- confidence reflects how sure the category is right: shaky/uncertain → below 0.4; clearly right → above 0.85.
+- Output language matches the user's existing categories.
+- Output STRICT JSON only, no extra text.
+
+Output format:
 {
+  "reasoning": "one short sentence (<= 20 words) on why this category, focusing on brand/host",
   "category": "recommended category name",
   "confidence": 0.95,
   "alternatives": [
-    { "category": "alternative 1", "confidence": 0.7 },
-    { "category": "alternative 2", "confidence": 0.5 }
+    { "category": "alternative 1", "confidence": 0.7 }
   ],
   "newCategory": null
 }
 
-If you suggest a new category, set newCategory to its name.`;
+When suggesting a new category, set both category and newCategory to the same name.`;
 
-  const userPrompt = `Please categorize this bookmark:
+  const userPrompt = `Categorize this bookmark. First identify core purpose from the host, then decide reuse vs. new category.
 
 Title: ${bookmark.title}
 URL: ${bookmark.url}
+Host: ${host}
 
-Current categories:
+Current categories (more items != better fit; only reuse when semantics match):
 ${categoryList || '(none yet)'}${fewShotText}
 
 Return the JSON result.`;
@@ -221,11 +282,13 @@ async function callChatAPI(
   }
 
   // 构建请求体
+  // temperature 0.1：分类任务追求一致性，降低随机性减少误判
+  // max_tokens 600：留出空间给新增的 reasoning 字段
   const body: Record<string, unknown> = {
     model: config.model,
     messages,
-    temperature: 0.3,
-    max_tokens: 500,
+    temperature: 0.1,
+    max_tokens: 600,
   };
 
   // Anthropic 格式适配：将 system 消息从 messages 中提取出来
