@@ -446,10 +446,10 @@ function renderClassifyLayout(
       </div>
 
       <div class="pc-actions">
-        <button class="pc-btn pc-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">
+        <button type="button" class="pc-btn pc-btn--primary" id="btn-confirm" data-category="${escapeHtml(result.category)}">
           ${escapeHtml(t('popup_saveToCategory', [result.category]))}
         </button>
-        <button class="pc-btn pc-btn--ghost" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
+        <button type="button" class="pc-btn pc-btn--ghost" id="btn-other">${escapeHtml(t('popup_selectOther'))}</button>
       </div>
     </div>
   `;
@@ -780,10 +780,18 @@ function bindEvents(
   const btnSave = document.getElementById('btn-save');
   btnSave?.addEventListener('click', () => handleSaveWithFolder(tabInfo));
 
-  // "确认分类"按钮
-  const btnConfirm = document.getElementById('btn-confirm');
+  // "确认分类"按钮 — 用 currentTarget 取属性，避免子节点点击命中
+  const btnConfirm = document.getElementById('btn-confirm') as HTMLButtonElement | null;
   btnConfirm?.addEventListener('click', (e) => {
-    const category = (e.target as HTMLElement).getAttribute('data-category') ?? '';
+    const target = e.currentTarget as HTMLButtonElement;
+    const category = target.getAttribute('data-category') ?? '';
+    if (!category) {
+      console.warn('[MarkPage] btn-confirm 缺少 data-category，忽略点击');
+      return;
+    }
+    // 立即视觉反馈：禁用按钮并切换为 saving 文案，避免用户误以为没触发
+    target.disabled = true;
+    target.textContent = t('popup_saving');
     handleConfirmClassify(tabInfo, category);
   });
 
@@ -795,7 +803,8 @@ function bindEvents(
   const altBtns = document.querySelectorAll('.popup-alt-btn');
   altBtns.forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const category = (e.target as HTMLElement).getAttribute('data-category') ?? '';
+      const target = e.currentTarget as HTMLElement;
+      const category = target.getAttribute('data-category') ?? '';
       handleConfirmClassify(tabInfo, category);
     });
   });
@@ -926,14 +935,20 @@ async function handleConfirmClassify(
     } else {
       // 未收藏：先告知后台 SW 跳过对这条 URL 的自动 AI 处理
       // （popup 已经在前台拿到分类与标签结果，写好后无需后台再跑一次）
-      // 必须在 createBookmark 之前 await，确保 SW 收到 hint 时早于 onCreated。
+      // MV3 下 SW 偶发不响应（冷启动 / 闲置回收），1.5s 超时兜底，
+      // 绝不能让主流程被它挂死 —— 否则用户点 Save 后会一直停在 "Saving..."。
       try {
-        await chrome.runtime.sendMessage({
-          type: 'markpage:skip-auto',
-          url: tabInfo.url,
-        });
+        await Promise.race([
+          chrome.runtime.sendMessage({
+            type: 'markpage:skip-auto',
+            url: tabInfo.url,
+          }),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('skip-auto sendMessage timeout')), 1500),
+          ),
+        ]);
       } catch (err) {
-        console.warn('[MarkPage] 通知 SW skip-auto 失败，将允许后台重复处理:', err);
+        console.warn('[MarkPage] 通知 SW skip-auto 失败/超时，继续创建书签:', err);
       }
 
       const created = await createBookmark(tabInfo.title, tabInfo.url, targetFolderId);

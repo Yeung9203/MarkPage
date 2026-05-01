@@ -821,6 +821,9 @@
   "popup_loading": {
     "message": "Loading..."
   },
+  "popup_saving": {
+    "message": "Saving..."
+  },
   "popup_errorNoTab": {
     "message": "Unable to fetch current page info"
   },
